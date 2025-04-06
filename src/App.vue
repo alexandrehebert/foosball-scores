@@ -59,6 +59,8 @@ export const loginWithGitHub = () => {
   window.location.href = githubAuthUrl;
 };
 
+const BASE_HREF = import.meta.env.VITE_BASE_URL || '/';
+
 export default defineComponent({
   name: 'App',
   components: {
@@ -90,8 +92,8 @@ export default defineComponent({
     const eloChartData = ref({});
 
     onMounted(async () => {
-      const matchesResponse = await fetch('/matches.csv');
-      const teamMatchesResponse = await fetch('/team-matches.csv');
+      const matchesResponse = await fetch(BASE_HREF + '/matches.csv');
+      const teamMatchesResponse = await fetch(BASE_HREF + '/team-matches.csv');
 
       const matchesCSV = await matchesResponse.text();
       const teamMatchesCSV = await teamMatchesResponse.text();

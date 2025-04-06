@@ -11,6 +11,14 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  BASE_HREF: ${{ vars.BASE_HREF }}
+  VITE_BASE_URL: ${{ vars.BASE_HREF }}
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,7 +46,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-          name: github-pages
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
