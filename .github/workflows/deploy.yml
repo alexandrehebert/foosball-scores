@@ -12,8 +12,7 @@ permissions:
   id-token: write
 
 env:
-  BASE_HREF: ${{ vars.BASE_HREF }}
-  VITE_BASE_URL: ${{ vars.BASE_HREF }}
+  VITE_BASE_URL: /foosball-scores/
 
 concurrency:
   group: 'pages'
