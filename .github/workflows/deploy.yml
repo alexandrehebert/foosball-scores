@@ -34,5 +34,11 @@ jobs:
       - name: Build project
         run: pnpm run build
 
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+          name: github-pages
+
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
