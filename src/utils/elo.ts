@@ -1,7 +1,6 @@
 import {
   Match,
   MatchType,
-  LeaderboardItem,
   MatchWithEloChanges,
   EloChangeEvent,
 } from "../types";
@@ -199,12 +198,4 @@ export function calculateELO(matches: Match[]): {
     decayReport,
     eloChanges,
   };
-}
-
-export function generateLeaderboard(
-  players: Record<string, number>
-): LeaderboardItem[] {
-  return Object.entries(players)
-    .map(([playerName, elo]) => ({ playerName, elo }))
-    .sort((a, b) => b.elo - a.elo);
 }

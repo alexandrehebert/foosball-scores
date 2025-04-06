@@ -1,11 +1,11 @@
 <template>
   <div class="chart-container">
-    <Line :data="data" :options="chartOptions" />
+    <Line :data="processedData" :options="chartOptions" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, computed } from 'vue';
 import { Line } from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -17,6 +17,7 @@ import {
   LinearScale,
   PointElement,
 } from 'chart.js';
+import { getPlayerColor } from '../utils/color';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
@@ -63,6 +64,20 @@ export default defineComponent({
         },
       }),
     },
+  },
+  setup(props) {
+    const processedData = computed(() => {
+      return {
+        ...props.data,
+        datasets: props.data.datasets.map((dataset: any) => ({
+          ...dataset,
+          borderColor: getPlayerColor(dataset.label), // Set line color based on player name
+          backgroundColor: getPlayerColor(dataset.label), // Set fill color if applicable
+        })),
+      };
+    });
+
+    return { processedData };
   },
 });
 </script>
