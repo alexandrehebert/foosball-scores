@@ -1,5 +1,6 @@
 import {
   Match,
+  MatchType,
   LeaderboardItem,
   MatchWithEloChanges,
   EloChangeEvent,
@@ -60,12 +61,13 @@ export function calculateELO(matches: Match[]): {
     const winnerELO = winnerTeam === "blue" ? blueTeamELO : redTeamELO;
     const loserELO = loserTeam === "blue" ? blueTeamELO : redTeamELO;
 
-    const kFactor = getDynamicKFactor(winnerELO, loserELO);
+    const initialKFactor = getDynamicKFactor(winnerELO, loserELO);
+    const kFactor = (type === MatchType.INDIVIDUAL ? 1 : .5) * initialKFactor;
 
     const expectedScoreWinner =
       1 / (1 + Math.pow(10, (loserELO - winnerELO) / 400));
     const expectedScoreLoser = 1 - expectedScoreWinner;
-
+    
     // Modify Elo change calculation to increase the effect of big Elo differences
     const winnerChange = Math.round(kFactor * (1 - expectedScoreWinner) * 1.5); // Increase effect on winner
     const loserChange = Math.round(kFactor * (0 - expectedScoreLoser) * 1.5); // Increase effect on loser
