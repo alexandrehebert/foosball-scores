@@ -106,7 +106,7 @@ export default defineComponent({
           rankId: player.playerName,
           rank: index + 1,
           playerName: player.playerName,
-          elo: player.elo,
+          elo: Math.round(player.elo),
           last10IndividualResults,
           last10TeamResults,
         };

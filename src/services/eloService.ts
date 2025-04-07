@@ -1,8 +1,144 @@
-import { calculateELO, DEFAULT_ELO } from '../utils/elo';
-import { MatchType, Match, LeaderboardItem, EloChangeEvent } from '../types';
-import { subDays, format, isSameDay, min } from 'date-fns';
+import { subDays, format, isSameDay, min, parse } from 'date-fns';
 import { groupBy } from 'lodash';
 import { getPlayerColor } from '../utils/color';
+
+import { compareAsc } from "date-fns";
+import {
+  Match,
+  MatchType,
+  MatchWithEloChanges,
+  EloChangeEvent,
+  LeaderboardItem,
+  DecayItem,
+} from "../types";
+import { de } from 'date-fns/locale';
+
+export const DEFAULT_ELO = 1000;
+export const DECAY_RATE = 5;
+export const DECAY_PERIOD_DAYS = 3;
+
+function getDynamicKFactor(winnerElo: number, loserElo: number): number {
+  const eloDiff = Math.abs(winnerElo - loserElo);
+
+  const minK = 20; // Increase the minimum K-factor to make even small differences more impactful
+  const maxK = 60; // Increase the max K-factor to allow for larger Elo differences
+  const maxDiff = 500; // Allow Elo differences beyond 300
+
+  // Clamp the eloDiff to the range [0, maxDiff]
+  const clampedDiff = Math.min(eloDiff, maxDiff);
+
+  // Linearly interpolate K between minK and maxK
+  const kFactor = minK + (maxK - minK) * (clampedDiff / maxDiff);
+
+  return Math.round(kFactor);
+}
+
+function calculateELO(matches: Match[]): {
+  players: Record<string, number>;
+  matchResults: MatchWithEloChanges[];
+  eloChanges: EloChangeEvent[];
+} {
+  const players: Record<string, number> = {};
+
+  function getELO(player: string) {
+    return players[player] ?? DEFAULT_ELO;
+  }
+
+  function updateELO({ id, opponents, winner, date, type }: Match, eloChanges: EloChangeEvent[]): MatchWithEloChanges {
+    const blueTeamELO =
+      opponents.blue.map(getELO).reduce((a, b) => a + b, 0) /
+      opponents.blue.length;
+    const redTeamELO =
+      opponents.red.map(getELO).reduce((a, b) => a + b, 0) /
+      opponents.red.length;
+
+    const winnerTeam = winner.includes(opponents.blue[0]) ? "blue" : "red";
+    const loserTeam = winnerTeam === "blue" ? "red" : "blue";
+
+    const winnerELO = winnerTeam === "blue" ? blueTeamELO : redTeamELO;
+    const loserELO = loserTeam === "blue" ? blueTeamELO : redTeamELO;
+
+    const initialKFactor = getDynamicKFactor(winnerELO, loserELO);
+    const kFactor = (type === MatchType.INDIVIDUAL ? 1 : .5) * initialKFactor;
+
+    const expectedScoreWinner =
+      1 / (1 + Math.pow(10, (loserELO - winnerELO) / 400));
+    const expectedScoreLoser = 1 - expectedScoreWinner;
+    
+    // Modify Elo change calculation to increase the effect of big Elo differences
+    const winnerChange = Math.round(kFactor * (1 - expectedScoreWinner) * 1.5); // Increase effect on winner
+    const loserChange = Math.round(kFactor * (0 - expectedScoreLoser) * 1.5); // Increase effect on loser
+
+    opponents[winnerTeam].forEach((player) => {
+      players[player] = getELO(player) + winnerChange;
+      eloChanges.push({ player, change: winnerChange, type: "match", date });
+    });
+
+    opponents[loserTeam].forEach((player) => {
+      players[player] = getELO(player) + loserChange;
+      eloChanges.push({ player, change: loserChange, type: "match", date });
+    });
+
+    return {
+      id,
+      opponents,
+      winner,
+      date,
+      winnerEloChange: winnerChange,
+      loserEloChange: loserChange,
+      type,
+    };
+  }
+
+  function calculateDecays(matches: Match[]): EloChangeEvent[] {
+    matches.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const playerDecays: EloChangeEvent[] = [];
+
+    const matchDays = Array.from(new Set(matches.map((m) => format(m.date, 'yyyy-MM-dd'))));
+
+    for (const player of Object.keys(players)) {
+      const playerMatches = matches.filter(
+        (match) =>
+          match.opponents.blue.includes(player) ||
+          match.opponents.red.includes(player)
+      );
+
+      const playerMatchDays = [...(new Set(
+        playerMatches.map((m) => format(m.date, 'yyyy-MM-dd'))
+      ))].sort();
+
+      let inactivityDays = 0;
+      let hasPlayed = false;
+      for (const matchDay of matchDays) {
+        hasPlayed = hasPlayed || playerMatchDays.includes(matchDay);
+        if (!hasPlayed) continue;
+        inactivityDays = playerMatchDays.includes(matchDay) ? 0 : inactivityDays + 1;
+        if (inactivityDays >= DECAY_PERIOD_DAYS) {
+          console.log(`Decay applied to ${player} on ${matchDay}`);
+          playerDecays.push({
+            player,
+            change: -DECAY_RATE,
+            type: "decay",
+            date: parse(matchDay, 'yyyy-MM-dd', new Date()),
+          });
+        }
+      }
+    }
+
+    return playerDecays;
+  }
+
+  const eloMatchChanges: EloChangeEvent[] = [];
+  const matchResults = matches.map((match) => updateELO(match, eloMatchChanges));
+  const eloChanges: EloChangeEvent[] = [...eloMatchChanges, ...calculateDecays(matches)].sort((a, b) => compareAsc(a.date, b.date));
+
+  return {
+    players,
+    matchResults,
+    eloChanges,
+  };
+}
 
 export function processELOData({ individualMatches, teamMatches }: { individualMatches: Match[], teamMatches: Match[] }) {
   const { players, matchResults, eloChanges } = calculateELO([...individualMatches, ...teamMatches]);
@@ -80,4 +216,3 @@ export function generateLeaderboard(
       .map(([playerName, elo]) => ({ playerName, elo }))
       .sort((a, b) => b.elo - a.elo);
   }
-  
