@@ -23,12 +23,6 @@ export type LeaderboardItem = {
   elo: number;
 }
 
-export type DecayItem = {
-  playerName: string;
-  inactivityDays: number;
-  decayApplied: number;
-}
-
 export type EloChangeEvent = {
   player: string;
   change: number;

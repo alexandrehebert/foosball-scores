@@ -9,9 +9,7 @@ import {
   MatchWithEloChanges,
   EloChangeEvent,
   LeaderboardItem,
-  DecayItem,
 } from "../types";
-import { de } from 'date-fns/locale';
 
 export const DEFAULT_ELO = 1000;
 export const DECAY_RATE = 5;
