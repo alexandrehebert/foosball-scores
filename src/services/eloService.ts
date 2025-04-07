@@ -2,6 +2,7 @@ import { calculateELO, DEFAULT_ELO } from '../utils/elo';
 import { MatchType, Match, LeaderboardItem, EloChangeEvent } from '../types';
 import { subDays, format, isSameDay, min } from 'date-fns';
 import { groupBy } from 'lodash';
+import { getPlayerColor } from '../utils/color';
 
 export function processELOData({ individualMatches, teamMatches }: { individualMatches: Match[], teamMatches: Match[] }) {
   const { players, matchResults, eloChanges } = calculateELO([...individualMatches, ...teamMatches]);
@@ -38,7 +39,6 @@ export function generateELOChartData(players: Record<string, number>, eloChanges
   Object.entries(eloChangesByDate).forEach(([day, changes]) => {
     const [{ date }] = changes;
     const dayBefore = matchDates[matchDates.indexOf(day) - 1] ?? format(subDays(date, 1), 'yyyy-MM-dd');
-    console.log(day, dayBefore);
     if (!eloByDate[dayBefore]) eloByDate[dayBefore] = {};
     if (!eloByDate[day]) eloByDate[day] = { ...(eloByDate[dayBefore] ?? {}) };
     for (const player of allPlayers) {
@@ -65,7 +65,7 @@ export function generateELOChartData(players: Record<string, number>, eloChanges
         return previousElo;
       }),
       fill: false,
-      borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      borderColor: getPlayerColor(player),
       tension: 0.1,
     };
   });
