@@ -1,6 +1,7 @@
 import { calculateELO, DEFAULT_ELO } from '../utils/elo';
 import { MatchType, Match, LeaderboardItem, EloChangeEvent } from '../types';
-import { subDays, format, isSameDay, max } from 'date-fns';
+import { subDays, format, isSameDay, min } from 'date-fns';
+import { groupBy } from 'lodash';
 
 export function processELOData({ individualMatches, teamMatches }: { individualMatches: Match[], teamMatches: Match[] }) {
   const { players, matchResults, eloChanges } = calculateELO([...individualMatches, ...teamMatches]);
@@ -17,49 +18,48 @@ export function generateELOChartData(players: Record<string, number>, eloChanges
   const eloByDate: Record<string, Record<string, number>> = {};
   const allPlayers = Object.keys(players);
 
-  const firstMatchDates: Record<string, Date> = {};
-  const lastMatchDate = max(eloChanges.map(({ date }) => date));
+  const firstMatchDates: Record<string, Date> = allPlayers.map((player) => min(eloChanges.filter(({ player: p }) => p === player).map(({ date }) => date)))
+    .reduce((acc, date, index) => {
+      acc[allPlayers[index]] = date;
+      return acc;
+    }, {} as Record<string, Date>);
+  const matchDates: string[] = eloChanges.map(({ date }) => format(date, 'yyyy-MM-dd'))
+    .reduce((acc, date) => {
+      if (!acc.includes(date)) acc.push(date);
+      return acc;
+    }, [] as string[]);
+  const eloAcc: Record<string, number> = allPlayers.reduce((acc, player) => {
+      acc[player] = DEFAULT_ELO;
+      return acc;
+    }, {} as Record<string, number>);
 
-  eloChanges.forEach(({ player, date }) => {
-    if (!firstMatchDates[player] || date < new Date(firstMatchDates[player])) {
-      firstMatchDates[player] = date;
-    }
-  });
-
-  Object.entries(firstMatchDates).forEach(([player, firstMatchDate]) => {
-    const dayBefore = format(subDays(firstMatchDate, 1), 'yyyy-MM-dd');
+  const eloChangesByDate = groupBy(eloChanges, (change) => format(change.date, 'yyyy-MM-dd'));
+  
+  Object.entries(eloChangesByDate).forEach(([day, changes]) => {
+    const [{ date }] = changes;
+    const dayBefore = matchDates[matchDates.indexOf(day) - 1] ?? format(subDays(date, 1), 'yyyy-MM-dd');
+    console.log(day, dayBefore);
     if (!eloByDate[dayBefore]) eloByDate[dayBefore] = {};
-    eloByDate[dayBefore][player] = DEFAULT_ELO;
-  });
-
-  eloChanges.forEach(({ player, change, date }) => {
-    const day = format(date, 'yyyy-MM-dd');
-    if (isSameDay(date, firstMatchDates[player])) {
-      const dayBefore = format(subDays(date, 1), 'yyyy-MM-dd');
-      if (!eloByDate[dayBefore]) eloByDate[dayBefore] = {};
-      if (!eloByDate[dayBefore][player]) eloByDate[dayBefore][player] = DEFAULT_ELO;
+    if (!eloByDate[day]) eloByDate[day] = { ...(eloByDate[dayBefore] ?? {}) };
+    for (const player of allPlayers) {
+      if (isSameDay(date, firstMatchDates[player]))
+        eloByDate[dayBefore][player] = DEFAULT_ELO;
+      eloByDate[day][player] = eloByDate[dayBefore][player];
     }
-    if (!eloByDate[day]) eloByDate[day] = { ...eloByDate[Object.keys(eloByDate).pop() || day] };
-    if (!eloByDate[day][player]) eloByDate[day][player] = eloByDate[Object.keys(eloByDate).pop() || day][player] || DEFAULT_ELO;
-    eloByDate[day][player] += change;
-  });
-
-  const lastMatchDateFormatted = format(lastMatchDate, 'yyyy-MM-dd');
-  eloByDate[lastMatchDateFormatted] = { ...eloByDate[Object.keys(eloByDate).pop() || lastMatchDateFormatted] };
-  allPlayers.forEach(player => {
-    if (firstMatchDates[player]) {
-      eloByDate[lastMatchDateFormatted][player] = players[player];
+    for (const { player, change } of changes) {
+      eloAcc[player] += change;
+      eloByDate[day][player] = eloAcc[player];
     }
   });
 
-  const sortedDates = Object.keys(eloByDate).sort();
-  const labels = sortedDates;
+  const graphDates = Object.keys(eloByDate).sort();
+  const labels = graphDates;
   const datasets = allPlayers.map(player => {
     let previousElo: number | undefined = undefined;
     return {
       label: player,
-      data: sortedDates.map(date => {
-        if (eloByDate[date]?.[player] !== undefined) {
+      data: graphDates.map(date => {
+        if (eloByDate[date][player]) {
           previousElo = eloByDate[date][player];
         }
         return previousElo;

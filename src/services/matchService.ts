@@ -1,4 +1,4 @@
-import { parseISO } from 'date-fns';
+import { compareAsc, parseISO } from 'date-fns';
 import { parseCSV } from '../utils/csv';
 import { TEAMS } from '../constants';
 import { MatchType } from '../types';
@@ -22,6 +22,8 @@ export async function fetchMatches() {
     type: MatchType.INDIVIDUAL,
   }));
 
+  individualMatches.sort((a, b) => compareAsc(a.date, b.date));
+
   const teamMatches = parseCSV(teamMatchesCSV).rows.map(row => ({
     id: generateUniqueId(),
     opponents: { blue: row.slice(0, 2), red: row.slice(2, 4) },
@@ -29,6 +31,8 @@ export async function fetchMatches() {
     date: parseISO(row[5]),
     type: MatchType.TEAM,
   }));
+
+  teamMatches.sort((a, b) => compareAsc(a.date, b.date));
 
   return { individualMatches, teamMatches };
 }

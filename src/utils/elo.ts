@@ -1,3 +1,4 @@
+import { compareAsc } from "date-fns";
 import {
   Match,
   MatchType,
@@ -23,6 +24,21 @@ function getDynamicKFactor(winnerElo: number, loserElo: number): number {
   const kFactor = minK + (maxK - minK) * (clampedDiff / maxDiff);
 
   return Math.round(kFactor);
+}
+
+function countWeekdaysBetween(start: Date, end: Date): number {
+  let count = 0;
+  const current = new Date(start);
+
+  while (current < end) {
+    const day = current.getDay();
+    if (day !== 0 && day !== 6) { // Exclude Sundays (0) and Saturdays (6)
+      count++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return count;
 }
 
 export function calculateELO(matches: Match[]): {
@@ -134,9 +150,7 @@ export function calculateELO(matches: Match[]): {
         const start = allDates[i];
         const end = allDates[i + 1];
 
-        const diffDays = Math.floor(
-          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-        );
+        const diffDays = countWeekdaysBetween(start, end); // Use weekdays only
 
         if (diffDays > DECAY_PERIOD_DAYS) {
           const inactiveDays = diffDays - DECAY_PERIOD_DAYS;
@@ -155,6 +169,12 @@ export function calculateELO(matches: Match[]): {
           for (let j = DECAY_PERIOD_DAYS; j < diffDays; j++) {
             const decayDate = new Date(start);
             decayDate.setDate(decayDate.getDate() + j);
+
+            // Skip weekends
+            if (decayDate.getDay() === 0 || decayDate.getDay() === 6) {
+              continue;
+            }
+
             eloChanges.push({
               player,
               change: -DECAY_RATE,
@@ -189,6 +209,8 @@ export function calculateELO(matches: Match[]): {
   matches.forEach(updateELO);
 
   const decayReport = applyDecay(matches);
+
+  eloChanges.sort((a, b) => compareAsc(a.date, b.date));
 
   return {
     players: Object.fromEntries(
