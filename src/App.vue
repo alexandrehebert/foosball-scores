@@ -28,6 +28,7 @@
           </v-tabs-window>
         </v-card>
       </v-container>
+      <FloatingButton :onClick="redirectToGitHub" />
     </v-main>
     <v-footer app color="primary" dark>
       <v-col class="text-center white--text">
@@ -39,11 +40,12 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import { VApp, VAppBar, VCard, VToolbar, VToolbarTitle, VMain, VContainer, VRow, VCol, VTabs, VTab, VTabsWindow, VTabsWindowItem, VFooter } from 'vuetify/components';
+import { VApp, VAppBar, VCard, VToolbar, VToolbarTitle, VMain, VContainer, VRow, VCol, VTabs, VTab, VTabsWindow, VTabsWindowItem, VFooter, VIcon, VBtn } from 'vuetify/components';
 import Leaderboard from './components/Leaderboard.vue';
 import IndividualMatchTable from './components/IndividualMatchTable.vue';
 import TeamMatchTable from './components/TeamMatchTable.vue';
 import LineChart from './components/LineChart.vue';
+import FloatingButton from './components/FloatingButton.vue';
 import { fetchMatches } from './services/matchService';
 import { processELOData, generateELOChartData, generateLeaderboard } from './services/eloService';
 import { LeaderboardItem, MatchWithEloChanges } from './types';
@@ -64,11 +66,14 @@ export default defineComponent({
     VTab,
     VTabsWindow,
     VTabsWindowItem,
+    VIcon,
+    VBtn,
     VFooter,
     Leaderboard,
     TeamMatchTable,
     IndividualMatchTable,
     LineChart,
+    FloatingButton,
   },
   setup() {
     const tab = ref(0);
@@ -97,7 +102,11 @@ export default defineComponent({
       eloChart.value = eloChartData;
     });
 
-    return { tab, leaderboard, individualMatches, teamMatches, matchResults, eloChart };
+    const redirectToGitHub = () => {
+      window.open('https://github.com/alexandrehebert/foosball-scores', '_blank');
+    };
+
+    return { tab, leaderboard, individualMatches, teamMatches, matchResults, eloChart, redirectToGitHub };
   },
 });
 </script>
