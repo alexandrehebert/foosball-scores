@@ -32,7 +32,7 @@
     </v-main>
     <v-footer app color="primary" dark>
       <v-col class="text-center white--text">
-        © {{ new Date().getFullYear() }} Fairstone Developers
+        © {{ new Date().getFullYear() }} Foosball Scores
       </v-col>
     </v-footer>
   </v-app>
