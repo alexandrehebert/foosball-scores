@@ -91,10 +91,7 @@ function calculateELO(matches: Match[]): {
   }
 
   function calculateDecays(matches: Match[]): EloChangeEvent[] {
-    matches.sort((a, b) => a.date.getTime() - b.date.getTime());
-
     const playerDecays: EloChangeEvent[] = [];
-
     const matchDays = Array.from(new Set(matches.map((m) => format(m.date, 'yyyy-MM-dd'))));
 
     for (const player of Object.keys(players)) {
@@ -141,7 +138,8 @@ function calculateELO(matches: Match[]): {
 }
 
 export function processELOData({ individualMatches, teamMatches }: { individualMatches: Match[], teamMatches: Match[] }) {
-  const { players, matchResults, eloChanges } = calculateELO([...individualMatches, ...teamMatches]);
+  const matches = [...individualMatches, ...teamMatches].sort((a, b) => compareAsc(a.date, b.date));
+  const { players, matchResults, eloChanges } = calculateELO(matches);
   return {
     matchResults,
     individualMatches: matchResults.filter(({ type }) => type === MatchType.INDIVIDUAL),
