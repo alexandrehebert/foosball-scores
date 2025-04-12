@@ -1,45 +1,49 @@
 <template>
-  <v-tooltip bottom>
-    <template  v-slot:activator="{ props }">
-      <v-btn
+  <v-tooltip>
+    <template v-slot:activator="{ props }">
+      <v-btn 
         fab
+        icon
+        size="large"
         color="primary"
         class="floating-btn"
         v-bind="props"
         @click="onClick"
       >
-        <v-icon>mdi-plus</v-icon>
+        <v-icon>{{ icon }}</v-icon>
       </v-btn>
     </template>
-    <span>Add Match</span>
+    <span>{{ label }}</span>
   </v-tooltip>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { VIcon, VBtn, VTooltip } from 'vuetify/components';
 
 export default defineComponent({
   name: 'FloatingButton',
-  components: {
-    VIcon,
-    VBtn,
-    VTooltip,
-  },
   props: {
     onClick: {
       type: Function,
       required: true,
     },
+    icon: {
+      type: String,
+      default: 'mdi-plus', // Default icon
+    },
+    label: {
+      type: String,
+      default: 'Add Match', // Default label
+    },
   },
 });
 </script>
 
-<style>
+<style scoped>
 .floating-btn {
   position: fixed;
-  bottom: 6rem;
-  right: 2rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   z-index: 1000;
 }
 </style>

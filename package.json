@@ -1,12 +1,13 @@
 {
-  "name": "vue-vite",
+  "name": "ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -14,15 +15,27 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "lodash": "^4.17.21",
+    "papaparse": "^5.5.2",
+    "pinia": "^3.0.1",
+    "sass": "^1.86.3",
+    "sass-loader": "^12.0.0",
     "vue": "^3.5.13",
     "vue-chartjs": "^5.3.2",
+    "vue-router": "^4.5.0",
     "vuetify": "3.8.0-beta.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.16",
+    "@types/node": "^22.14.0",
+    "@types/papaparse": "^5.3.15",
     "@vitejs/plugin-vue": "^5.2.1",
+    "env-cmd": "^10.1.0",
+    "jsdom": "^26.0.0",
+    "pnpm": "^8.15.7",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vitest": "^0.34.0",
     "vue-tsc": "^2.1.10"
   }
 }

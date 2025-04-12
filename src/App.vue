@@ -1,121 +1,137 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
-      <v-toolbar-title>Foosball Leaderboard</v-toolbar-title>
+    <v-app-bar app color="primary">
+      <div class="d-lg-none">
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" variant="text" icon="mdi-menu">
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="(link, index) in routerLinks"
+              :key="index"
+              @click="navigateTo(link.route)"
+            >
+              <v-icon class="me-2">{{ link.icon }}</v-icon>
+              <v-list-item-title>{{ link.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
+      <v-toolbar-title style="text-align: center;">
+        Foosball
+        <v-icon size="large">mdi-soccer-field</v-icon>
+        Leaderboard
+      </v-toolbar-title>
+      <v-tooltip>
+        <template v-slot:activator="{ props }">
+          <v-btn variant="text" icon @click="navigateTo('/badges')" v-bind="props">
+            <v-icon>mdi-shield-star-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>All Badges</span>
+      </v-tooltip>
+      <v-tooltip>
+        <template v-slot:activator="{ props }">
+          <v-btn variant="text" icon href="https://github.com/Fairstone-Financial-DEV/foosball-frontend" target="_blank"
+            v-bind="props">
+            <v-icon>mdi-github</v-icon>
+          </v-btn>
+        </template>
+        <span>Foosball Repository</span>
+      </v-tooltip>
+      <v-select
+        v-model="selectedSeason"
+        :items="store.availableSeasons"
+        label="Season"
+        outlined
+        density="compact"
+        hide-details
+        class="mx-2"
+        style="max-width: 150px;"
+        @change="selectedSeason = $event"
+      />
     </v-app-bar>
     <v-main class="v-main">
-      <v-container fluid>
-        <v-tabs v-model="tab" align-tabs="center" color="primary">
-          <v-tab>Leaderboard</v-tab>
-          <v-tab>Individual Matches</v-tab>
-          <v-tab>Team Matches</v-tab>
-          <v-tab>ELO-lution</v-tab>
-        </v-tabs>
-        <v-card>
-          <v-tabs-window v-model="tab">
-            <v-tabs-window-item value="0">
-              <Leaderboard :players="leaderboard" :matches="matchResults" />
-            </v-tabs-window-item>
-            <v-tabs-window-item value="1">
-              <IndividualMatchTable :matches="individualMatches" />
-            </v-tabs-window-item>
-            <v-tabs-window-item value="2">
-              <TeamMatchTable :matches="teamMatches" />
-            </v-tabs-window-item>
-            <v-tabs-window-item value="3">
-              <LineChart v-if="eloChart" :data="eloChart" />
-            </v-tabs-window-item>
-          </v-tabs-window>
-        </v-card>
+      <v-container>
+        <v-row justify="center" class="d-none d-lg-flex pb-2" style="justify-self: center;">
+          <v-col v-for="(link, index) in routerLinks" :key="index" class="align-center">
+            <router-link :to="link.route" custom>
+              <template v-slot="{ navigate }">
+                <v-btn
+                  :variant="isActive(link.route) ? 'tonal' : 'text'"
+                  :color="isActive(link.route) ? 'primary' : ''"
+                  @click="navigate"
+                  :prepend-icon="link.icon"
+                >
+                  {{ link.label }}
+                </v-btn>
+              </template>
+            </router-link>
+          </v-col>
+        </v-row>
+        <router-view />
       </v-container>
-      <FloatingButton :onClick="redirectToGitHub" />
     </v-main>
-    <v-footer app color="primary" dark>
-      <v-col class="text-center white--text">
-        © {{ new Date().getFullYear() }} Foosball Scores
-      </v-col>
-    </v-footer>
   </v-app>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import { VApp, VAppBar, VCard, VToolbar, VToolbarTitle, VMain, VContainer, VRow, VCol, VTabs, VTab, VTabsWindow, VTabsWindowItem, VFooter, VIcon, VBtn } from 'vuetify/components';
-import Leaderboard from './components/Leaderboard.vue';
-import IndividualMatchTable from './components/IndividualMatchTable.vue';
-import TeamMatchTable from './components/TeamMatchTable.vue';
-import LineChart from './components/LineChart.vue';
-import FloatingButton from './components/FloatingButton.vue';
-import { fetchMatches } from './services/matchService';
-import { processELOData, generateELOChartData, generateLeaderboard } from './services/eloService';
-import { LeaderboardItem, MatchWithEloChanges } from './types';
+import { defineComponent, computed, onMounted, watch } from 'vue';
+import { useFoosballStore } from './store';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'App',
-  components: {
-    VApp,
-    VCard,
-    VAppBar,
-    VMain,
-    VToolbar,
-    VToolbarTitle,
-    VContainer,
-    VRow,
-    VCol,
-    VTabs,
-    VTab,
-    VTabsWindow,
-    VTabsWindowItem,
-    VIcon,
-    VBtn,
-    VFooter,
-    Leaderboard,
-    TeamMatchTable,
-    IndividualMatchTable,
-    LineChart,
-    FloatingButton,
-  },
   setup() {
-    const tab = ref(0);
-    const leaderboard = ref<LeaderboardItem[]>([]);
-    const individualMatches = ref<MatchWithEloChanges[]>([]);
-    const teamMatches = ref<MatchWithEloChanges[]>([]);
-    const matchResults = ref<MatchWithEloChanges[]>([]);
-    const eloChart = ref<{ labels?: string[]; datasets?: any }>({ labels: [], datasets: {} });
+    const store = useFoosballStore();
+    const router = useRouter();
 
-    onMounted(async () => {
-      const {
-        players,
-        individualMatches: individualMatchesData,
-        teamMatches: teamMatchesData,
-        matchResults: matchResultsData,
-        eloChanges,
-      } = processELOData(await fetchMatches());
+    const routerLinks = [
+      { label: 'Leaderboard', icon: 'mdi-podium-gold', route: '/leaderboard' },
+      { label: 'Tournament', icon: 'mdi-trophy-outline', route: '/tournament' },
+      { label: 'Matches', icon: 'mdi-account-group-outline', route: '/matches' },
+      { label: 'ELO-lution', icon: 'mdi-chart-line', route: '/elo-evolution' },
+      { label: 'Activity', icon: 'mdi-calendar', route: '/activity' },
+    ];
 
-      const leaderboardData = generateLeaderboard(players);
-      const eloChartData = generateELOChartData(players, eloChanges);
-
-      leaderboard.value = leaderboardData;
-      individualMatches.value = individualMatchesData;
-      teamMatches.value = teamMatchesData;
-      matchResults.value = matchResultsData;
-      eloChart.value = eloChartData;
-    });
-
-    const redirectToGitHub = () => {
-      window.open('https://github.com/alexandrehebert/foosball-scores', '_blank');
+    const navigateTo = (route: string) => {
+      router.push(route);
     };
 
-    return { tab, leaderboard, individualMatches, teamMatches, matchResults, eloChart, redirectToGitHub };
+    const isActive = (route: string) => {
+      return router.currentRoute.value.path === route;
+    };
+
+    const selectedSeason = computed({
+      get: () => `${store.selectedSeason.year}#S${store.selectedSeason.semester}`,
+      set: (value: string) => {
+        const [year, semester] = value.split('#S').map(Number);
+        store.setSelectedSeason({ year, semester });
+      },
+    });
+
+    // Watch for changes in selectedSeason and reload data
+    watch(
+      () => store.selectedSeason,
+      async () => {
+        await store.loadData();
+      },
+      { deep: true }
+    );
+
+    onMounted(async () => {
+      await store.loadData();
+    });
+
+    return { store, routerLinks, navigateTo, isActive, selectedSeason };
   },
 });
 </script>
 
-<style>
+<style scoped>
 .v-main {
-  max-width: 720px;
-  margin: 0 auto;
-  flex: 1 0 auto;
-  padding-bottom: 8rem; /* Add padding to the bottom */
+  padding-bottom: 4rem;
 }
 </style>

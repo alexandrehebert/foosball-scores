@@ -1,0 +1,4 @@
+round,id,player1,player2,winner,date,previous_match1,previous_match2
+1,match4,Falcon,Eagle,Eagle,2025-04-12T21:59:20.384Z,,
+1,match5,Hawk,Raven,,2025-04-12T21:59:20.384Z,,
+2,match6,Eagle,Hawk,,2025-04-12T21:59:20.384Z,match4,match5

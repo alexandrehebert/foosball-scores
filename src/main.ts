@@ -1,8 +1,12 @@
 import { createApp } from 'vue';
 import App from './App.vue';
+import { createPinia } from 'pinia'; // Import Pinia
 import { createVuetify } from 'vuetify';
-import 'vuetify/styles'; // Import Vuetify styles
+import 'vuetify/styles'; // Ensure Vuetify styles are imported
 import '@mdi/font/css/materialdesignicons.css'; // Import Material Design Icons
+import router from './router'; // Import the router
+
+const pinia = createPinia(); // Initialize Pinia
 
 const customTheme = {
   dark: false,
@@ -29,6 +33,11 @@ const customTheme = {
 };
 
 const vuetify = createVuetify({
+  defaults: {
+    global: {
+      useUtilityClasses: true, // Ensure utility classes are enabled
+    },
+  },
   theme: {
     defaultTheme: 'customTheme',
     themes: {
@@ -38,5 +47,7 @@ const vuetify = createVuetify({
 }); // Initialize Vuetify
 
 createApp(App)
+  .use(router) // Use the router
+  .use(pinia) // Use Pinia globally
   .use(vuetify) // Use Vuetify globally
   .mount('#app');

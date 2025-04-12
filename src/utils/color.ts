@@ -1,16 +1,53 @@
+import colors from 'vuetify/util/colors';
+
 const usedColors = new Set<string>();
+const colorCache = new Map<string, string>();
 
-export function getPlayerColor(playerName: string): string {
-  const hash = [...playerName].reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  let hue = hash % 360; // Map hash to a hue value (0-359)
+const availableColors = [
+  colors.red.base,
+  colors.pink.base,
+  colors.purple.base,
+  colors.deepPurple.base,
+  colors.indigo.base,
+  colors.blue.base,
+  colors.lightBlue.base,
+  colors.cyan.base,
+  colors.teal.base,
+  colors.green.base,
+  colors.lightGreen.base,
+  colors.lime.base,
+  colors.yellow.base,
+  colors.amber.base,
+  colors.orange.base,
+  colors.deepOrange.base,
+  colors.brown.base,
+  colors.blueGrey.base,
+];
 
-  // Ensure uniqueness by adjusting the hue if the color is already used
-  let color = `hsl(${hue}, 70%, 50%)`;
-  while (usedColors.has(color)) {
-    hue = (hue + 1) % 360; // Increment hue and wrap around if necessary
-    color = `hsl(${hue}, 70%, 50%)`;
+export function getPlayerColor(player: string): string {
+  if (colorCache.has(player)) {
+    return colorCache.get(player)!;
+  }
+
+  const hash = [...player].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  let colorIndex = hash % availableColors.length;
+
+  // Find the next available color if the calculated one is already used
+  let color = availableColors[colorIndex];
+  let attempts = 0;
+  while (usedColors.has(color) && attempts < availableColors.length) {
+    colorIndex = (colorIndex + 1) % availableColors.length;
+    color = availableColors[colorIndex];
+    attempts++;
+  }
+
+  if (attempts === availableColors.length) {
+    // Generate a fallback color based on the player's hash
+    const hue = hash % 360; // Generate a hue value between 0 and 359
+    color = `hsl(${hue}, 70%, 50%)`; // Use HSL with fixed saturation and lightness
   }
 
   usedColors.add(color);
+  colorCache.set(player, color);
   return color;
 }
