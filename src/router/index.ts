@@ -1,10 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router';
 import Leaderboard from '../views/Leaderboard.vue';
 import MatchTable from '../views/MatchTable.vue';
 import EloEvolution from '../views/EloEvolution.vue';
 import ActivitySummary from '../views/ActivitySummary.vue';
 import BadgesPage from '../views/BadgesPage.vue';
-import { BASE_URL } from '../constants';
+import { BASE_URL, IS_GH_PAGES } from '../constants';
 import Tournament from '../views/Tournament.vue';
 
 const routes = [
@@ -18,7 +18,9 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(BASE_URL),
+  history: IS_GH_PAGES
+  ? createWebHashHistory(BASE_URL)
+  : createWebHistory(BASE_URL),
   routes,
 });
 
