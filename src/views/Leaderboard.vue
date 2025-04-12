@@ -32,7 +32,7 @@
                   <span>This player is in placement (fewer than 5 matches played).</span>
                 </v-tooltip>
               </div>
-              <v-icon v-if="item.rank === 1 && !item.isInPlacement" class="crown-icon" size="small">
+              <v-icon v-if="isLeader(item)" class="crown-icon" size="small">
                 mdi-trophy-award
               </v-icon>
             </div>
@@ -194,6 +194,9 @@ export default defineComponent({
       if (result === "WIN") return 'green';
       if (result === "LOSS") return 'red';
       return 'rgba(211, 211, 211, 0.5)';
+    },
+    isLeader(item: LeaderboardItem) {
+      return this.podium[0] && item.player.name === this.podium[0].player.name;
     },
     getPodiumColor(item: LeaderboardItem) {
       if (item.isInPlacement) return ''; // Placement players should not have podium colors
