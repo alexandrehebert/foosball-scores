@@ -16,6 +16,7 @@
           multiple
           outlined
           :return-object="true"
+          :disabled="tournamentStarted"
           @update:model-value="onPlayersCleared"
         >
           <template v-slot:chip="{ props, item }">
@@ -35,12 +36,21 @@
         <v-row class="mt-2">
           <v-col cols="12" md="4">
             <v-btn 
+              v-if="!tournamentStarted" 
               color="primary" 
               block 
               @click="startTournament" 
               :disabled="selectedPlayers.length < 2 || bracket.length > 0"
             >
               Start Tournament
+            </v-btn>
+            <v-btn 
+              v-else 
+              color="error" 
+              block 
+              @click="endTournament"
+            >
+              End Tournament
             </v-btn>
           </v-col>
           <v-col cols="12" md="4">
@@ -323,6 +333,7 @@ export default defineComponent({
     const restoreTab = ref(0); // 0 for Paste CSV, 1 for Select Tournament
     const tournamentCSV = ref('');
     const selectedTournament = ref<{ filePath: string; name: string; } | null>(null);
+    const tournamentStarted = ref(false);
 
     onMounted(async () => {
       await store.loadTournamentsData();
@@ -336,7 +347,13 @@ export default defineComponent({
           round.map(match => reactive(match))
         );
         bracket.splice(0, bracket.length, ...newBracket);
+        tournamentStarted.value = true;
       }
+    };
+
+    const endTournament = () => {
+      bracket.splice(0, bracket.length); // Reset the tournament bracket
+      tournamentStarted.value = false;
     };
 
     const onPlayersCleared = (newValue: Player[]) => {
@@ -585,6 +602,7 @@ export default defineComponent({
       selectedPlayers,
       bracket,
       startTournament,
+      endTournament,
       onPlayersCleared,
       getWinProbabilityColor,
       getRoundName,
@@ -604,6 +622,7 @@ export default defineComponent({
       restoreTournament,
       openRestoreDrawer,
       copyToClipboard,
+      tournamentStarted,
     };
   },
 });

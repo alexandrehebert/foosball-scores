@@ -19,11 +19,22 @@
           </v-list>
         </v-menu>
       </div>
-      <v-toolbar-title style="text-align: center;">
+      <v-toolbar-title>
         Foosball
         <v-icon size="large">mdi-soccer-field</v-icon>
         Leaderboard
       </v-toolbar-title>
+      <v-select
+        v-model="selectedSeason"
+        :items="store.availableSeasons"
+        label="Season"
+        outlined
+        density="compact"
+        hide-details
+        class="mx-2"
+        style="max-width: 150px;"
+        @change="selectedSeason = $event"
+      />
       <v-tooltip>
         <template v-slot:activator="{ props }">
           <v-btn variant="text" icon @click="navigateTo('/badges')" v-bind="props">
@@ -41,17 +52,6 @@
         </template>
         <span>Foosball Repository</span>
       </v-tooltip>
-      <v-select
-        v-model="selectedSeason"
-        :items="store.availableSeasons"
-        label="Season"
-        outlined
-        density="compact"
-        hide-details
-        class="mx-2"
-        style="max-width: 150px;"
-        @change="selectedSeason = $event"
-      />
     </v-app-bar>
     <v-main class="v-main">
       <v-container>
