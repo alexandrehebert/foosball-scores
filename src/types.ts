@@ -25,14 +25,15 @@ export enum MatchResult {
 }
 
 export type LeaderboardItem = {
-  rank: number;
-  rankVariation: number;
+  rank: number | null; // Rank can be null if not ranked or in placement
+  rankVariation: number | null; // Rank variation can be null if not ranked or in placement
   player: Player;
   last10IndividualResults: MatchResult[];
   last10TeamResults: MatchResult[];
   last10IndividualMatches: MatchWithEloChanges[];
   last10TeamMatches: MatchWithEloChanges[];
-}
+  isInPlacement: boolean; // New property to indicate placement status
+};
 
 export type EloChangeEvent = {
   player: string;
@@ -45,7 +46,7 @@ export type Player = {
   name: string;
   elo: number;
   color: string;
-  rank: number;
+  rank: number | null; // Rank can be null if not ranked or in placement
 }
 
 export type Players = Record<string, Player>;

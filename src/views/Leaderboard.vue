@@ -1,13 +1,12 @@
 <template>
   <v-card class="mb-4">
-    <!-- Player Rankings -->
-    <v-data-table :headers="headers" :items="players" item-value="rankId" :items-per-page="-1" hide-default-footer>
+    <v-data-table :headers="headers" :items="leaderboard" item-value="rankId" :items-per-page="-1" hide-default-footer>
       <template #item="{ item }">
-        <tr :class="getRowClass(item)">
+        <tr :class="[getPodiumColor(item), { 'placement-row': item.isInPlacement }]">
           <td>
             <div class="rank-container">
-              <span>{{ item.rank }}</span>
-              <v-icon v-if="item.rankVariation !== 0" :class="getRankVariationClass(item.rankVariation)"
+              <span v-if="!item.isInPlacement">{{ item.rank }}</span>
+              <v-icon v-if="item.rankVariation !== null && !item.isInPlacement" :class="getRankVariationClass(item.rankVariation)"
                 :title="'Rank variation: ' + (item.rankVariation > 0 ? '+' + item.rankVariation : item.rankVariation)"
                 size="x-small">
                 {{ getRankVariationIcon(item.rankVariation) }}
@@ -24,14 +23,21 @@
               </v-btn>
               <div :style="{ flexGrow: 1 }">
                 {{ item.player.name }}
+                <v-tooltip bottom>
+                  <template #activator="{ props }">
+                    <v-icon v-if="item.isInPlacement" class="placement-icon" size="small" v-bind="props">
+                      mdi-information
+                    </v-icon>
+                  </template>
+                  <span>This player is in placement (fewer than 5 matches played).</span>
+                </v-tooltip>
               </div>
-              <v-icon v-if="item.rank === 1" class="crown-icon" size="small">
+              <v-icon v-if="item.rank === 1 && !item.isInPlacement" class="crown-icon" size="small">
                 mdi-trophy-award
               </v-icon>
             </div>
           </td>
           <td>{{ item.player.elo }}</td>
-          <!-- Hide or display "Last 10 Matches" columns based on screen size -->
           <td class="last-10-matches">
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10IndividualResults)" :key="i"
@@ -53,7 +59,7 @@
   <v-card>
     <v-data-table :headers="teamsHeaders" :items="teams" item-value="team" :items-per-page="-1" hide-default-footer>
       <template #item="{ item }">
-        <tr :class="getRowClass(item)">
+        <tr :class="getTeamPodiumColor(item)">
           <td>{{ item.rank }}</td>
           <td class="player-container">
             <v-btn class="profile-button mr-2" size="x-small" variant="text" icon @click="openTeamCard(item)"
@@ -96,7 +102,7 @@ import PlayerCard from '../components/PlayerCard.vue';
 import TeamCard from '../components/TeamCard.vue';
 import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
 import FloatingButton from '../components/FloatingButton.vue';
-import { LeaderboardItem } from '../types';
+import { LeaderboardItem, Player } from '../types';
 import { getPlayerColor } from '../utils/color';
 import { generateTeamRankings } from '../services/eloService';
 
@@ -118,12 +124,22 @@ const TEAMS_HEADERS = [
 
 export default defineComponent({
   name: 'Leaderboard',
+  computed: {
+    podium() {
+      // Create podium data excluding placement players
+      return this.leaderboard
+        .filter((item) => !item.isInPlacement)
+        .slice(0, 3).map((item) => item);
+    },
+  },
   setup() {
     const store = useFoosballStore();
     const players = computed(() => store.leaderboard);
     const matches = computed(() => store.matchResults);
     const eloChanges = computed(() => store.eloChanges);
     const teams = computed(() => generateTeamRankings(store.matchResults));
+
+    const leaderboard = computed(() => players.value);
 
     const isSmallScreen = ref(window.innerWidth < 768);
 
@@ -151,7 +167,7 @@ export default defineComponent({
         : TEAMS_HEADERS;
     });
 
-    return { players, matches, eloChanges, teams, headers, teamsHeaders };
+    return { players, leaderboard, matches, eloChanges, teams, headers, teamsHeaders };
   },
   components: {
     DotWithTooltip,
@@ -163,7 +179,7 @@ export default defineComponent({
   data() {
     return {
       isPlayerCardOpen: false,
-      selectedPlayer: { name: '', elo: 0, rank: 0, color: '' },
+      selectedPlayer: { name: '', elo: 0, rank: 0 as number | null, color: '' },
       isTeamCardOpen: false,
       selectedTeam: { members: [] as string[], rank: 0 },
       isSimulateMatchDialogOpen: false,
@@ -179,11 +195,30 @@ export default defineComponent({
       if (result === "LOSS") return 'red';
       return 'rgba(211, 211, 211, 0.5)';
     },
-    getRowClass(item: { readonly rank: number }) {
-      if (item.rank === 1) return 'gold-row';
-      if (item.rank === 2) return 'silver-row';
-      if (item.rank === 3) return 'bronze-row';
-      return '';
+    getPodiumColor(item: LeaderboardItem) {
+      if (item.isInPlacement) return ''; // Placement players should not have podium colors
+      switch (this.podium.indexOf(item)) {
+        case 0:
+          return 'gold-row';
+        case 1:
+          return 'silver-row';
+        case 2:
+          return 'bronze-row';
+        default:
+          return '';
+      }
+    },
+    getTeamPodiumColor(item: { rank: number }) {
+      switch (item.rank) {
+        case 1:
+          return 'gold-row';
+        case 2:
+          return 'silver-row';
+        case 3:
+          return 'bronze-row';
+        default:
+          return '';
+      }
     },
     getRankVariationIcon(variation: number) {
       return variation > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down';
@@ -275,6 +310,16 @@ export default defineComponent({
 .profile-button {
   cursor: pointer;
   color: #007bff;
+}
+
+.placement-icon {
+  color: orange;
+  margin-left: 4px;
+}
+
+.placement-row {
+  background-color: rgba(211, 211, 211, 0.5); /* Light gray background */
+  color: gray;
 }
 
 /* Hide "Last 10 Matches" columns on smaller screens */

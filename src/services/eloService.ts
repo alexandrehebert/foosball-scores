@@ -260,16 +260,16 @@ export function generateLeaderboard(
   matchResults: MatchWithEloChanges[],
   eloChanges: EloChangeEvent[]
 ): LeaderboardItem[] {
-
   const lastELOs = generateLastELOs(players, eloChanges);
   const previousRanking = Object.values(players)
-    .sort((a, b) => (lastELOs[b.name]) - (lastELOs[a.name]));
+    .sort((a, b) => lastELOs[b.name] - lastELOs[a.name]);
 
   const leaderboard = Object.values(players)
     .map((player) => {
       const playerMatches = matchResults.filter(
         (match) =>
-          match.opponents.blue.includes(player.name) || match.opponents.red.includes(player.name)
+          match.opponents.blue.includes(player.name) ||
+          match.opponents.red.includes(player.name)
       );
 
       const individualMatches = playerMatches.filter((match) => match.type === MatchType.INDIVIDUAL);
@@ -286,25 +286,34 @@ export function generateLeaderboard(
       const last10IndividualMatches = individualMatches.slice(-10);
       const last10TeamMatches = teamMatches.slice(-10);
 
+      const totalMatchesPlayed = playerMatches.length;
+      const isInPlacement = totalMatchesPlayed < 5; // Mark players with fewer than 5 matches as in placement
+
       return {
         player,
         last10IndividualResults,
         last10TeamResults,
         last10IndividualMatches,
         last10TeamMatches,
+        isInPlacement,
       };
     })
     .sort((a, b) => b.player.elo - a.player.elo)
     .map((item, index) => ({
       ...item,
-      rank: index + 1,
-      rankVariation: previousRanking.findIndex(({ name }) => name === item.player.name) - index,
+      rank: item.isInPlacement ? null : index + 1, // Assign rank only to non-placement players
+      potentialRank: index + 1, // Add potential rank for placement players
+      rankVariation: item.isInPlacement
+        ? null
+        : previousRanking.findIndex(({ name }) => name === item.player.name) - index,
     }));
-  
+
   leaderboard.forEach((item) => {
-    players[item.player.name].rank = item.rank;
+    if (!item.isInPlacement) {
+      players[item.player.name].rank = item.rank;
+    }
   });
-  
+
   return leaderboard;
 }
 
