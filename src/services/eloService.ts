@@ -237,6 +237,7 @@ function generateLastELOs(
   players: Players,
   eloChanges: EloChangeEvent[]
 ) {
+  if (!eloChanges[eloChanges.length - 1]) return {};
 
   const lastCompetitionDay = formatDay(eloChanges[eloChanges.length - 1].date)
   const lastELOs = Object.values(players).map(({ name, elo }) => ({

@@ -105,10 +105,10 @@ export default defineComponent({
     };
 
     const selectedSeason = computed({
-      get: () => `${store.selectedSeason.year}#S${store.selectedSeason.semester}`,
+      get: () => `${store.selectedSeason.year}#Q${store.selectedSeason.quarter}`,
       set: (value: string) => {
-        const [year, semester] = value.split('#S').map(Number);
-        store.setSelectedSeason({ year, semester });
+        const [year, quarter] = value.split('#Q').map(Number);
+        store.setSelectedSeason({ year, quarter });
       },
     });
 

@@ -1,5 +1,5 @@
 <template>
-    <v-card color="secondary">
+    <v-card v-if="isCurrentMonthInSeason" color="secondary">
       <v-container>
         <v-row class="flex-wrap">
           <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
@@ -15,89 +15,89 @@
             <div>{{ mostActivePlayer.name }} ({{ mostActivePlayer.matchesPlayed }} matches)</div>
           </v-col>
         </v-row>
-    </v-container>
-  </v-card>
-  <v-card class="mt-4">
-    <v-container>
-      <v-row>
-        <v-col cols="12">
-          <v-text-field
-            v-model="searchQuery"
-            label="Search players"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="comfortable"
-            hide-details
-            clearable
-          />
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col
-          v-for="player in filteredPlayers"
-          :key="player.name"
-          cols="12"
-          sm="6"
-          md="6"
-          lg="4"
-        >
-          <v-card
-            :variant="isPlayerInactive(player) ? 'plain' : 'text'"
-            :subtitle="'ELO: ' + player.elo + ' | Rank: ' + player.rank"
-            @click="openPlayerCard(player)"
-            class="pb-4 position-relative"
+      </v-container>
+    </v-card>
+    <v-card class="mt-4">
+      <v-container>
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+              v-model="searchQuery"
+              label="Search players"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              clearable
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
+            v-for="player in filteredPlayers"
+            :key="player.name"
+            cols="12"
+            sm="6"
+            md="6"
+            lg="4"
           >
-            <v-sheet class="elo-sparkline d-flex items-center position-absolute top-0 bottom-0 left-0 right-0" color="transparent">
-              <v-sparkline
-                :auto-line-width="true"
-                :fill="false"
-                :gradient="['#f72047', '#ffd200', '#1feaea']"
-                gradient-direction="top"
-                line-width="3"
-                :model-value="getEloChanges(player)"
-                padding="2"
-                smooth="10"
-                stroke-linecap="round"
-                type="trend"
-                auto-draw
-                :color="player.color"
-              />
-            </v-sheet>
-            <template v-slot:title>
-              <div class="d-flex align-center">
-                {{ player.name }}
-                <v-icon
-                  v-if="winStreak(player) >= 3"
-                  class="ml-2"
-                  color="red"
-                  size="24"
-                  :title="`Win Streak: ${winStreak(player)} matches in a row`"
-                >
-                  mdi-fire
-                </v-icon>
-                <v-icon
-                  v-if="loseStreak(player) >= 3"
-                  class="ml-2"
-                  color="blue"
-                  size="24"
-                  :title="`Lose Streak: ${loseStreak(player)} matches in a row`"
-                >
-                  mdi-water
-                </v-icon>
-              </div>
-            </template>
-            <template v-slot:prepend>
-              <v-avatar size="40" class="mr-3" :color="player.color">
-                <v-icon>mdi-account</v-icon>
-              </v-avatar>
-            </template>
-            <ActivityHeatmap :playerName="player.name" :allMatches="allMatches" :maxActivityOverride="maxActivity" />
-          </v-card>
-        </v-col>
-      </v-row>
-      <PlayerCard v-if="selectedPlayer" :isOpen="isPlayerCardOpen" :player="selectedPlayer" @update:isOpen="isPlayerCardOpen = $event" />
-    </v-container>
-  </v-card>
+            <v-card
+              :variant="isPlayerInactive(player) ? 'plain' : 'text'"
+              :subtitle="'ELO: ' + player.elo + ' | Rank: ' + player.rank"
+              @click="openPlayerCard(player)"
+              class="pb-4 position-relative"
+            >
+              <v-sheet class="elo-sparkline d-flex items-center position-absolute top-0 bottom-0 left-0 right-0" color="transparent">
+                <v-sparkline
+                  :auto-line-width="true"
+                  :fill="false"
+                  :gradient="['#f72047', '#ffd200', '#1feaea']"
+                  gradient-direction="top"
+                  line-width="3"
+                  :model-value="[0, ...getEloChanges(player)]"
+                  padding="2"
+                  smooth="10"
+                  stroke-linecap="round"
+                  type="trend"
+                  auto-draw
+                  :color="player.color"
+                />
+              </v-sheet>
+              <template v-slot:title>
+                <div class="d-flex align-center">
+                  {{ player.name }}
+                  <v-icon
+                    v-if="winStreak(player) >= 3"
+                    class="ml-2"
+                    color="red"
+                    size="24"
+                    :title="`Win Streak: ${winStreak(player)} matches in a row`"
+                  >
+                    mdi-fire
+                  </v-icon>
+                  <v-icon
+                    v-if="loseStreak(player) >= 3"
+                    class="ml-2"
+                    color="blue"
+                    size="24"
+                    :title="`Lose Streak: ${loseStreak(player)} matches in a row`"
+                  >
+                    mdi-water
+                  </v-icon>
+                </div>
+              </template>
+              <template v-slot:prepend>
+                <v-avatar size="40" class="mr-3" :color="player.color">
+                  <v-icon>mdi-account</v-icon>
+                </v-avatar>
+              </template>
+              <ActivityHeatmap :playerName="player.name" :allMatches="allMatches" :maxActivityOverride="maxActivity" />
+            </v-card>
+          </v-col>
+        </v-row>
+        <PlayerCard v-if="selectedPlayer" :isOpen="isPlayerCardOpen" :player="selectedPlayer" @update:isOpen="isPlayerCardOpen = $event" />
+      </v-container>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -125,6 +125,14 @@ export default defineComponent({
         player.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
+    isCurrentMonthInSeason() {
+      const store = useFoosballStore();
+      const currentDate = new Date();
+      const monthsPerPeriod = 3;
+      const seasonStart = new Date(store.selectedSeason.year, (store.selectedSeason.quarter - 1) * monthsPerPeriod, 1);
+      const seasonEnd = new Date(store.selectedSeason.year, store.selectedSeason.quarter * monthsPerPeriod, 0);
+      return currentDate >= seasonStart && currentDate <= seasonEnd;
+    }
   },
   watch: {
     searchQuery(newValue) {

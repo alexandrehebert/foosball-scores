@@ -18,7 +18,7 @@ export const useFoosballStore = defineStore('foosball', {
       availableSeasons: [] as string[],
       selectedSeason: {
         year: currentYear,
-        semester: currentMonth < 6 ? 1 : 2, // Default to the current season
+        quarter: Math.floor(currentMonth / 3) + 1, // Default to current quarter (1-4)
       },
       tournaments: [] as { name: string; rounds: Round[][] }[], // Store tournament data as Round[][]
       selectedTournament: null as { name: string; rounds: Round[][] } | null, // Currently selected tournament
@@ -29,9 +29,9 @@ export const useFoosballStore = defineStore('foosball', {
     async loadData() {
       const { individualMatches, teamMatches } = await fetchMatches();
 
-      const { year, semester } = this.selectedSeason;
-      const seasonStart = new Date(year, semester === 1 ? 0 : 6, 1);
-      const seasonEnd = new Date(seasonStart.getFullYear(), seasonStart.getMonth() + 6, 0);
+      const { year, quarter } = this.selectedSeason;
+      const seasonStart = new Date(year, (quarter - 1) * 3, 1);
+      const seasonEnd = new Date(year, quarter * 3, 0);
 
       // Filter matches based on the selected season
       const filteredIndividualMatches = individualMatches.filter(
@@ -63,8 +63,8 @@ export const useFoosballStore = defineStore('foosball', {
       const matchDates = [...individualMatches, ...teamMatches].map((match) => new Date(match.date));
       this.availableSeasons = Array.from(matchDates.reduce((seasons, date) => {
         const year = date.getFullYear();
-        const semester = date.getMonth() < 6 ? 1 : 2;
-        seasons.add(`${year}#S${semester}`);
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        seasons.add(`${year}#Q${quarter}`);
         return seasons;
       }, new Set<string>())).sort();
     },
@@ -78,7 +78,7 @@ export const useFoosballStore = defineStore('foosball', {
     setSelectedTournament(tournamentName: string) {
       this.selectedTournament = this.tournaments.find((t) => t.name === tournamentName) || null;
     },
-    setSelectedSeason(season: { year: number; semester: number }) {
+    setSelectedSeason(season: { year: number; quarter: number }) {
       this.selectedSeason = season;
     },
   },
