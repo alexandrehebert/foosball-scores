@@ -102,7 +102,7 @@ import PlayerCard from '../components/PlayerCard.vue';
 import TeamCard from '../components/TeamCard.vue';
 import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
 import FloatingButton from '../components/FloatingButton.vue';
-import { LeaderboardItem, Player } from '../types';
+import { LeaderboardItem } from '../types';
 import { getPlayerColor } from '../utils/color';
 import { generateTeamRankings } from '../services/eloService';
 
