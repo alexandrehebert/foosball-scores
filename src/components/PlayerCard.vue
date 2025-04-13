@@ -90,7 +90,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue';
 import { useFoosballStore } from '../store';
-import { Player } from '../types';
+import { type Player } from '../types';
 import { getPlayerColor } from '../utils/color';
 import { calculateBadges, BADGES, CATEGORY_COLORS } from '../services/badgeService';
 import LabeledDivider from './LabeledDivider.vue';

@@ -51,3 +51,8 @@ export function getPlayerColor(player: string): string {
   colorCache.set(player, color);
   return color;
 }
+
+export function getTeamColor(members: string[]) {
+    const concatenatedNames = members.join('');
+    return getPlayerColor(concatenatedNames);
+}

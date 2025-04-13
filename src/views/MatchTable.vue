@@ -66,17 +66,20 @@
   </v-card>
   <v-data-table :headers="headers" :items="filteredMatches" item-value="id" class="elevation-1">
     <template #item.blue="{ item }">
-      <span
-        :class="{ winner: isWinner(item, 'blue'), loser: !isWinner(item, 'blue') }">
-        {{ item.opponents.blue.join(', ') }}
-      </span>
       <EloDisplay :isWinner="isWinner(item, 'blue')"
         :eloChange="isWinner(item, 'blue') ? item.winnerEloChange : item.loserEloChange" />
+      <span
+        :class="{ winner: isWinner(item, 'blue'), loser: !isWinner(item, 'blue') }">
+        {{ item.opponents.blue.join(' & ') }}
+      </span>
+    </template>
+    <template #item.type="{ item }">
+      <v-icon>{{ getMatchType(item.type)?.icon }}</v-icon>
     </template>
     <template #item.red="{ item }">
       <span
         :class="{ winner: isWinner(item, 'red'), loser: !isWinner(item, 'red') }">
-        {{ item.opponents.red.join(', ') }}
+        {{ item.opponents.red.join(' & ') }}
       </span>
       <EloDisplay :isWinner="isWinner(item, 'red')"
         :eloChange="isWinner(item, 'red') ? item.winnerEloChange : item.loserEloChange" />
@@ -128,6 +131,11 @@ export default defineComponent({
       ];
     },
   },
+  methods: {
+    getMatchType(type: MatchType) {
+      return this.MATCH_TYPES.find((matchType) => matchType.type === type);
+    },
+  },
   setup() {
     const store = useFoosballStore();
     const allMatches = computed(() => store.matchResults.sort((a, b) => compareAsc(b.date, a.date)));
@@ -150,7 +158,8 @@ export default defineComponent({
     };
 
     const headers = [
-      { title: 'Blue', key: 'blue' },
+      { title: 'Blue', key: 'blue', align: 'end' as const },
+      { title: 'Vs', key: 'type', width: '50px', align: 'center' as const },
       { title: 'Red', key: 'red' },
       { title: 'Date', key: 'date' },
     ];

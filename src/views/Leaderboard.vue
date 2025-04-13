@@ -15,13 +15,8 @@
           </td>
           <td>
             <div class="player-container">
-              <v-btn class="profile-button mr-2" size="x-small" variant="text" icon @click="openPlayerCard(item)"
-                :title="'View Profile of ' + item.player.name">
-                <v-avatar size="24" :color="getPlayerColor(item.player.name)">
-                  <v-icon size="small">mdi-account</v-icon>
-                </v-avatar>
-              </v-btn>
-              <div :style="{ flexGrow: 1 }">
+              <PlayerAvatarBtn :player="item.player" />
+              <div class="ml-2 flex-grow-1">
                 {{ item.player.name }}
                 <v-tooltip bottom>
                   <template #activator="{ props }">
@@ -62,13 +57,8 @@
         <tr :class="getTeamPodiumColor(item)">
           <td>{{ item.rank }}</td>
           <td class="player-container">
-            <v-btn class="profile-button mr-2" size="x-small" variant="text" icon @click="openTeamCard(item)"
-              :title="'View Profile of ' + item.members.join(' & ')">
-              <v-avatar size="24" :color="getTeamColor(item.members)">
-                <v-icon size="small">mdi-account-group</v-icon>
-              </v-avatar>
-            </v-btn>
-            <div :style="{ flexGrow: 1 }">
+            <TeamAvatarBtn :team="item" @click="openTeamCard(item)" />
+            <div class="ml-2 flex-grow-1">
               {{ item.members.join(' & ') }}
             </div>
             <v-icon v-if="item.rank === 1" class="crown-icon" size="small">
@@ -89,7 +79,6 @@
     <v-btn v-if="hasMoreTeams" @click="showMoreTeams" block class="d-flex mt-2" style="justify-self: center;" variant="text">Show More</v-btn>
   </v-card>
 
-  <PlayerCard :isOpen="isPlayerCardOpen" :player="selectedPlayer" @update:isOpen="isPlayerCardOpen = $event" />
   <TeamCard :isOpen="isTeamCardOpen" :team="selectedTeam" @update:isOpen="isTeamCardOpen = $event" />
   <MatchSimulationDialog v-model:isDialogOpen="isSimulateMatchDialogOpen" />
   <FloatingButton :onClick="openSimulateMatchDialog" icon="mdi-gamepad-variant" label="Simulate Match" />
@@ -103,6 +92,8 @@ import PlayerCard from '../components/PlayerCard.vue';
 import TeamCard from '../components/TeamCard.vue';
 import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
 import FloatingButton from '../components/FloatingButton.vue';
+import PlayerAvatarBtn from '../components/PlayerAvatarBtn.vue';
+import TeamAvatarBtn from '../components/TeamAvatarBtn.vue';
 import { LeaderboardItem } from '../types';
 import { getPlayerColor } from '../utils/color';
 import { generateTeamRankings } from '../services/eloService';
@@ -178,10 +169,12 @@ export default defineComponent({
   },
   components: {
     DotWithTooltip,
-    PlayerCard,
-    TeamCard,
     MatchSimulationDialog,
     FloatingButton,
+    PlayerCard,
+    PlayerAvatarBtn,
+    TeamCard,
+    TeamAvatarBtn,
   },
   data() {
     return {
@@ -253,10 +246,6 @@ export default defineComponent({
     getPlayerColor(playerName: string) {
       return getPlayerColor(playerName);
     },
-    getTeamColor(members: string[]) {
-      const concatenatedNames = members.join('');
-      return getPlayerColor(concatenatedNames);
-    },
     openSimulateMatchDialog() {
       this.isSimulateMatchDialogOpen = true;
     },
@@ -314,16 +303,6 @@ export default defineComponent({
 
 .crown-icon {
   margin-left: 4px;
-}
-
-.profile-icon {
-  cursor: pointer;
-  color: #007bff;
-}
-
-.profile-button {
-  cursor: pointer;
-  color: #007bff;
 }
 
 .placement-icon {
