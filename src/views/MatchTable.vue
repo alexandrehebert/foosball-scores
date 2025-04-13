@@ -158,9 +158,9 @@ export default defineComponent({
     };
 
     const headers = [
-      { title: 'Blue', key: 'blue', align: 'end' as const },
-      { title: 'Vs', key: 'type', width: '50px', align: 'center' as const },
-      { title: 'Red', key: 'red' },
+      { title: 'Blue', key: 'blue', align: 'end' as const, sortable: false },
+      { title: 'Vs', key: 'type', align: 'center' as const, sortable: false },
+      { title: 'Red', key: 'red', sortable: false },
       { title: 'Date', key: 'date' },
     ];
 
