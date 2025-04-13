@@ -48,13 +48,22 @@
         <v-col cols="12" md="4">
           <v-select
             v-model="selectedMatchType"
-            :items="matchTypes"
-            item-value="value"
-            item-title="label"
+            :items="MATCH_TYPES"
+            item-value="type"
             label="Match Type"
             clearable
             hide-details="auto"
-          />
+          >
+            <template v-slot:selection="{ item }">
+              {{ item.raw.label }}
+            </template>
+            <template v-slot:item="{ props, item }">
+              <v-list-item v-bind="props" :title="''">
+                <v-icon>{{ item.raw.icon }}</v-icon>
+                {{ item.raw.label }}
+              </v-list-item>
+            </template>
+          </v-select>
         </v-col>
       </v-row>
       <v-row>
@@ -141,10 +150,6 @@ export default defineComponent({
     const allMatches = computed(() => store.matchResults.sort((a, b) => compareAsc(b.date, a.date)));
     const players = computed(() => Object.values(store.players));
 
-    const matchTypes = [
-      { value: MatchType.INDIVIDUAL, label: 'Individual' },
-      { value: MatchType.TEAM, label: 'Team' },
-    ];
     const selectedMatchType = ref<string | null>(null);
     const selectedBlue = ref<Player | null>(null);
     const selectedRed = ref<Player | null>(null);
@@ -201,7 +206,6 @@ export default defineComponent({
 
     return {
       open,
-      matchTypes,
       selectedMatchType,
       selectedBlue,
       selectedRed,
