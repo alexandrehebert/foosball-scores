@@ -7,7 +7,7 @@
             <v-row class="flex-wrap">
               <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
                 <div class="text-h5">Players of the Month</div>
-                <v-icon>mdi-star-outline</v-icon>
+                <v-icon color="#ffd700">mdi-star-outline</v-icon>
               </v-col>
               <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
                 <div class="text-h6">Highest ELO Gain</div>
@@ -32,7 +32,6 @@
         >
           <v-card
             :variant="isPlayerInactive(player) ? 'plain' : 'text'"
-            :title="player.name"
             :subtitle="'ELO: ' + player.elo + ' | Rank: ' + player.rank"
             @click="openPlayerCard(player)"
             class="pb-4 position-relative"
@@ -53,6 +52,20 @@
                 :color="player.color"
               />
             </v-sheet>
+            <template v-slot:title>
+              <div class="d-flex align-center">
+                {{ player.name }}
+                <v-icon
+                  v-if="winStreak(player) >= 3"
+                  class="ml-2"
+                  color="red"
+                  size="24"
+                  :title="`Win Streak: ${winStreak(player)} matches in a row`"
+                >
+                  mdi-fire
+                </v-icon>
+              </div>
+            </template>
             <template v-slot:prepend>
               <v-avatar size="40" class="mr-3" :color="player.color">
                 <v-icon>mdi-account</v-icon>
@@ -75,7 +88,8 @@ import PlayerCard from '../components/PlayerCard.vue'; // Import PlayerCard comp
 import { DECAY_PERIOD_DAYS } from '../constants';
 import { formatDay } from '../utils/dates';
 import { Player } from '../types';
-import { startOfMonth, isSameMonth } from 'date-fns';
+import { startOfMonth, isSameMonth, compareAsc } from 'date-fns';
+import { pl } from 'date-fns/locale';
 
 export default defineComponent({
   name: 'ActivitySummary',
@@ -183,14 +197,23 @@ export default defineComponent({
       this.isPlayerCardOpen = true; // Open player card
     },
     getEloChanges(player: Player): number[] {
-      return this.eloChanges.filter((change) => change.player === player.name)
-        .map((change) => ({
-          date: change.date,
-          elo: change.change,
-        }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .map((change) => change.elo);
+      return this.eloChanges
+        .filter((change) => change.player === player.name)
+        .sort((a, b) => compareAsc(a.date, b.date))
+        .slice(-10)
+        .map(({ change }) => change);
     },
+    winStreak(player: Player) {
+      return this.getEloChanges(player)
+        .reduce((streak, change) => {
+          if (change > 0) {
+            streak++;
+          } else {
+            streak = 0;
+          }
+          return streak;
+        }, 0);
+    }
   },
 });
 </script>
