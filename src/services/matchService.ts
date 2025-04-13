@@ -31,7 +31,7 @@ export async function fetchMatches() {
     id: generateUniqueId(),
     opponents: { blue: [row.player1], red: [row.player2] },
     winner: [row.winner],
-    loser: [row.player1 === row.player2 ? row.player2 : row.player1],
+    loser: [row.player1 === row.winner ? row.player2 : row.player1],
     date: parseISO(row.date),
     type: MatchType.INDIVIDUAL,
   })).sort((a, b) => compareAsc(a.date, b.date));

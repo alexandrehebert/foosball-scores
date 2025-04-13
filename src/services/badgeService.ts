@@ -55,7 +55,7 @@ export const BADGES = [
         if (match.winner.includes(player)) {
           streak++;
           if (streak === 3) return true;
-        } else {
+        } else if (match.loser.includes(player)) {
           streak = 0;
         }
       }
@@ -76,7 +76,7 @@ export const BADGES = [
         if (match.winner.includes(player)) {
           streak++;
           if (streak === 5) return true;
-        } else {
+        } else if (match.loser.includes(player)) {
           streak = 0;
         }
       }
@@ -97,7 +97,7 @@ export const BADGES = [
         if (match.winner.includes(player)) {
           streak++;
           if (streak === 10) return true;
-        } else {
+        } else if (match.loser.includes(player)) {
           streak = 0;
         }
       }

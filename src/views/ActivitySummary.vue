@@ -42,9 +42,9 @@
                 :fill="false"
                 :gradient="['#f72047', '#ffd200', '#1feaea']"
                 gradient-direction="top"
-                line-width="2"
+                line-width="3"
                 :model-value="getEloChanges(player)"
-                padding="5"
+                padding="2"
                 smooth="10"
                 stroke-linecap="round"
                 type="trend"
@@ -203,6 +203,7 @@ export default defineComponent({
         .map(({ change }) => change);
     },
     winStreak(player: Player) {
+      console.log(this.getEloChanges(player))
       return this.getEloChanges(player)
         .reduce((streak, change) => {
           if (change > 0) {
