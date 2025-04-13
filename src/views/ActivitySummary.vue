@@ -1,29 +1,40 @@
 <template>
-  <v-card>
+    <v-card color="secondary">
+      <v-container>
+        <v-row class="flex-wrap">
+          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+            <div class="text-h5">Players of the Month</div>
+            <v-icon color="#ffd700">mdi-star-outline</v-icon>
+          </v-col>
+          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+            <div class="text-h6">Highest ELO Gain</div>
+            <div>{{ highestEloGainPlayer.name }} ({{ highestEloGainPlayer.eloGain }} ELO)</div>
+          </v-col>
+          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+            <div class="text-h6">Most Active Player</div>
+            <div>{{ mostActivePlayer.name }} ({{ mostActivePlayer.matchesPlayed }} matches)</div>
+          </v-col>
+        </v-row>
+    </v-container>
+  </v-card>
+  <v-card class="mt-4">
     <v-container>
       <v-row>
         <v-col cols="12">
-          <v-banner color="primary" variant="text">
-            <v-row class="flex-wrap">
-              <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
-                <div class="text-h5">Players of the Month</div>
-                <v-icon color="#ffd700">mdi-star-outline</v-icon>
-              </v-col>
-              <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
-                <div class="text-h6">Highest ELO Gain</div>
-                <div>{{ highestEloGainPlayer.name }} ({{ highestEloGainPlayer.eloGain }} ELO)</div>
-              </v-col>
-              <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
-                <div class="text-h6">Most Active Player</div>
-                <div>{{ mostActivePlayer.name }} ({{ mostActivePlayer.matchesPlayed }} matches)</div>
-              </v-col>
-            </v-row>
-          </v-banner>
+          <v-text-field
+            v-model="searchQuery"
+            label="Search players"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            clearable
+          />
         </v-col>
       </v-row>
       <v-row>
         <v-col
-          v-for="player in players"
+          v-for="player in filteredPlayers"
           :key="player.name"
           cols="12"
           sm="6"
@@ -64,6 +75,15 @@
                 >
                   mdi-fire
                 </v-icon>
+                <v-icon
+                  v-if="loseStreak(player) >= 3"
+                  class="ml-2"
+                  color="blue"
+                  size="24"
+                  :title="`Lose Streak: ${loseStreak(player)} matches in a row`"
+                >
+                  mdi-water
+                </v-icon>
               </div>
             </template>
             <template v-slot:prepend>
@@ -100,6 +120,18 @@ export default defineComponent({
     eloChanges() {
       return this.store.eloChanges;
     },
+    filteredPlayers() {
+      return this.players.filter(player => 
+        player.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+  },
+  watch: {
+    searchQuery(newValue) {
+      if (!newValue) {
+        this.searchQuery = '';
+      }
+    }
   },
   setup() {
     const store = useFoosballStore();
@@ -151,8 +183,8 @@ export default defineComponent({
         const matchDay = formatDay(match.date);
         if (last10Days.includes(matchDay)) {
           activityMap[matchDay]++;
-        }
-      });
+matchDay   }
+      matchDay         });
       const maxActivity = Math.max(...Object.values(activityMap));
       return maxActivity > 0 ? maxActivity : 1;
     });
@@ -188,6 +220,7 @@ export default defineComponent({
     return {
       isPlayerCardOpen: false, // Add state for player card
       selectedPlayer: null as (Player | null), // Add state for selected player
+      searchQuery: '', // Add search query
     };
   },
   methods: {
@@ -210,6 +243,21 @@ export default defineComponent({
         .map(({ change }) => change)
         .reduce((streak, change) => {
           if (change > 0) {
+            streak++;
+          } else {
+            streak = 0;
+          }
+          return streak;
+        }, 0);
+    },
+    loseStreak(player: Player) {
+      return this.eloChanges
+        .filter((change) => change.player === player.name && change.type === 'match')
+        .sort((a, b) => compareAsc(a.date, b.date))
+        .slice(-10)
+        .map(({ change }) => change)
+        .reduce((streak, change) => {
+          if (change < 0) {
             streak++;
           } else {
             streak = 0;
