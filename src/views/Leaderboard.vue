@@ -100,8 +100,8 @@ import { generateTeamRankings } from '../services/eloService';
 
 const HEADERS = [
   { title: 'Rank', key: 'rank', width: '40px' },
-  { title: 'Player', key: 'player' },
-  { title: 'ELO Score', key: 'elo', width: '40px' },
+  { title: 'Player', key: 'player.name' },
+  { title: 'ELO Score', key: 'player.elo', width: '40px' },
   { title: 'Last 10 Individual Matches', key: 'last10IndividualResults' },
   { title: 'Last 10 Team Matches', key: 'last10TeamResults' },
 ];
