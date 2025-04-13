@@ -10,11 +10,12 @@
             <span class="text-h6">{{ player.name }}</span>
             <div class="text-subtitle-2">ELO: {{ player.elo }} | Rank: {{ player.rank }}</div>
           </div>
-          <div class="d-flex flex-column align-end" style="gap: 0.2rem;">
+          <div class="d-flex flex-column align-end">
             <v-progress-circular
               :model-value="winRate"
-              :color="winRateColor"
-              size="36"
+              color="green"
+              bg-color="red"
+              size="40"
               width="6"
             >
             </v-progress-circular>
