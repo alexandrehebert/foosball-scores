@@ -1,314 +1,312 @@
 <template>
-  <v-container>
-    <v-card class="mb-4">
-      <v-card-title>Select Tournament Players</v-card-title>
-      <v-card-text>
-        <v-autocomplete
-          v-model="selectedPlayers"
-          :items="allPlayers"
-          item-text="name"
-          item-value="name"
-          label="Select Players"
-          chips
-          closable-chips
-          hide-details
-          clearable
-          multiple
-          outlined
-          :return-object="true"
-          :disabled="tournamentStarted"
-          @update:model-value="onPlayersCleared"
-        >
-          <template v-slot:chip="{ props, item }">
-            <v-chip v-bind="props" :prepend-icon="'mdi-account'" :color="item.raw.color">
-              {{ item.raw.name }}
-            </v-chip>
-          </template>
-          <template v-slot:item="{ props, item }">
-            <v-list-item v-bind="props" :title="''">
-              <v-avatar>
-                <v-icon :color="item.raw.color">mdi-account</v-icon>
-              </v-avatar>
-              {{ item.raw.name }}
-            </v-list-item>
-          </template>
-        </v-autocomplete>
-        <v-row class="mt-2">
-          <v-col cols="12" md="4">
-            <v-btn 
-              v-if="!tournamentStarted" 
-              color="primary" 
-              block 
-              @click="startTournament" 
-              :disabled="selectedPlayers.length < 2 || bracket.length > 0"
-            >
-              Start Tournament
-            </v-btn>
-            <v-btn 
-              v-else 
-              color="error" 
-              block 
-              @click="endTournament"
-            >
-              End Tournament
-            </v-btn>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-btn color="primary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
-              Generate Tournament
-            </v-btn>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-btn color="secondary" block @click="openRestoreDrawer">
-              Restore Tournament
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-
-    <v-card v-if="bracket.length > 0">
-      <v-card-title>Tournament Bracket</v-card-title>
-      <v-card-text>
-        <v-row>
-          <v-col
-            v-for="(round, roundIndex) in bracket"
-            :key="roundIndex"
-            cols="12"
-            md="4"
+  <v-card variant="outlined" class="mb-4">
+    <v-card-title>Select Tournament Players</v-card-title>
+    <v-card-text>
+      <v-autocomplete
+        v-model="selectedPlayers"
+        :items="allPlayers"
+        item-text="name"
+        item-value="name"
+        label="Select Players"
+        chips
+        closable-chips
+        hide-details
+        clearable
+        multiple
+        outlined
+        :return-object="true"
+        :disabled="tournamentStarted"
+        @update:model-value="onPlayersCleared"
+      >
+        <template v-slot:chip="{ props, item }">
+          <v-chip v-bind="props" :prepend-icon="'mdi-account'" :color="item.raw.color">
+            {{ item.raw.name }}
+          </v-chip>
+        </template>
+        <template v-slot:item="{ props, item }">
+          <v-list-item v-bind="props" :title="''">
+            <v-avatar>
+              <v-icon :color="item.raw.color">mdi-account</v-icon>
+            </v-avatar>
+            {{ item.raw.name }}
+          </v-list-item>
+        </template>
+      </v-autocomplete>
+      <v-row class="mt-2">
+        <v-col cols="12" md="4">
+          <v-btn 
+            v-if="!tournamentStarted" 
+            color="primary" 
+            block 
+            @click="startTournament" 
+            :disabled="selectedPlayers.length < 2 || bracket.length > 0"
           >
-            <v-sheet class="pa-2">
-              <div class="text-center mb-2">
-                <strong>
-                  {{ getRoundName(roundIndex, bracket.length) }}
-                </strong>
-              </div>
-              <v-row>
-                <v-col
-                  v-for="(match, matchIndex) in round"
-                  :key="matchIndex"
-                  cols="12"
-                >
-                  <v-card class="pa-2 mb-2" :variant="hasWinner(match) ? 'text' : 'plain'">
-                    <v-row cols="12">
-                      <v-col>
-                        <SimulationPlayerCard
-                          key="blue"
-                          :player="match.player1?.name || undefined"
-                          :color="match.player1?.color"
-                          placement="left"
-                          :win-probability="match.winProbability.player1 * 100"
-                        />
-                      </v-col>
-                      <v-col cols="2" class="d-flex align-center justify-center">
-                        <v-icon>{{ !match.player2 ? 'mdi-debug-step-over' : 'mdi-sword-cross' }}</v-icon>
-                      </v-col>
-                      <v-col>
-                        <SimulationPlayerCard
-                          key="red"
-                          :player="match.player2?.name || undefined"
-                          :color="match.player2?.color"
-                          placement="right"
-                          :win-probability="match.winProbability.player2 * 100"
-                        />
-                      </v-col>
-                    </v-row>
-                    <div class="d-flex flex-column justify-space-between mb-4">
-                      <v-progress-linear
-                        height="20"
-                        rounded
-                        :buffer-value="(match.winProbability.player1 * 100) + 1"
-                        :bg-color="match.player2?.color"
-                        bg-opacity="1"
-                        :color="match.player1?.color"
-                        opacity="1"
-                        :model-value="match.winProbability.player1 * 100"
-                        buffer-color="white"
-                        buffer-opacity="1"
-                        max="100"
-                        min="0"
-                      />
-                    </div>
-                    <div v-if="match.winProbability && !hasWinner(match)" class="mt-2">
-                      Predicted Winner: 
-                      <strong>
-                        {{ match.winProbability.player1 > match.winProbability.player2 ? match.player1?.name : match.player2?.name || 'Bye' }}
-                      </strong>
-                    </div>
-                    <div class="mt-2 d-flex justify-center" v-if="match.player1 && match.player2">
-                      <v-btn-toggle
-                        rounded="xl"
-                        v-model="match.selectedWinner"
-                        color="primary"
-                        mandatory
-                        :disabled="!isMatchPlayable(roundIndex, match)"
-                      >
-                        <v-btn
-                          :value="match.player1"
-                          :color="match.player1.color"
-                          @click="() => onSelectWinner(match, match.player1)"
-                        >
-                          {{ match.player1.name }}
-                        </v-btn>
-                        <v-btn
-                          :value="match.player2"
-                          :color="match.player2.color"
-                          @click="() => onSelectWinner(match, match.player2)"
-                        >
-                          {{ match.player2.name }}
-                        </v-btn>
-                      </v-btn-toggle>
-                    </div>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-sheet>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+            Start Tournament
+          </v-btn>
+          <v-btn 
+            v-else 
+            color="error" 
+            block 
+            @click="endTournament"
+          >
+            End Tournament
+          </v-btn>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-btn color="primary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
+            Generate Tournament
+          </v-btn>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-btn color="secondary" block @click="openRestoreDrawer">
+            Restore Tournament
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
 
-    <v-card v-if="bracket.length > 0" class="mt-4">
-      <v-card-title>Tournament Heatmap</v-card-title>
-      <v-card-text>
-        <v-sheet>
-          <v-row>
-            <v-col cols="12">
-              <div class="table-container">
-                <v-table>
-                  <thead>
-                    <tr>
-                      <th style="width: 150px;">Player</th>
-                      <th v-for="(_, roundIndex) in bracket" :key="roundIndex">
-                        {{ getRoundName(roundIndex, bracket.length) }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="player in selectedPlayers" :key="player.name">
-                      <td class="cell-spacing" style="width: 150px;">
-                        <div class="player-container">
-                          <v-avatar size="24" :color="player.color" class="mr-2">
-                            <v-icon size="small">mdi-account</v-icon>
-                          </v-avatar>
-                          <div>
-                            {{ player.name }}
-                            <div class="text-caption">
-                              {{ calculateWinToEndProbability(player) }}% to win
-                            </div>
+  <v-card v-if="bracket.length > 0">
+    <v-card-title>Tournament Bracket</v-card-title>
+    <v-card-text>
+      <v-row>
+        <v-col
+          v-for="(round, roundIndex) in bracket"
+          :key="roundIndex"
+          cols="12"
+          md="4"
+        >
+          <v-sheet class="pa-2">
+            <div class="text-center mb-2">
+              <strong>
+                {{ getRoundName(roundIndex, bracket.length) }}
+              </strong>
+            </div>
+            <v-row>
+              <v-col
+                v-for="(match, matchIndex) in round"
+                :key="matchIndex"
+                cols="12"
+              >
+                <v-card class="pa-2 mb-2" :variant="hasWinner(match) ? 'text' : 'plain'">
+                  <v-row cols="12">
+                    <v-col>
+                      <SimulationPlayerCard
+                        key="blue"
+                        :player="match.player1?.name || undefined"
+                        :color="match.player1?.color"
+                        placement="left"
+                        :win-probability="match.winProbability.player1 * 100"
+                      />
+                    </v-col>
+                    <v-col cols="2" class="d-flex align-center justify-center">
+                      <v-icon>{{ !match.player2 ? 'mdi-debug-step-over' : 'mdi-sword-cross' }}</v-icon>
+                    </v-col>
+                    <v-col>
+                      <SimulationPlayerCard
+                        key="red"
+                        :player="match.player2?.name || undefined"
+                        :color="match.player2?.color"
+                        placement="right"
+                        :win-probability="match.winProbability.player2 * 100"
+                      />
+                    </v-col>
+                  </v-row>
+                  <div class="d-flex flex-column justify-space-between mb-4">
+                    <v-progress-linear
+                      height="20"
+                      rounded
+                      :buffer-value="(match.winProbability.player1 * 100) + 1"
+                      :bg-color="match.player2?.color"
+                      bg-opacity="1"
+                      :color="match.player1?.color"
+                      opacity="1"
+                      :model-value="match.winProbability.player1 * 100"
+                      buffer-color="white"
+                      buffer-opacity="1"
+                      max="100"
+                      min="0"
+                    />
+                  </div>
+                  <div v-if="match.winProbability && !hasWinner(match)" class="mt-2">
+                    Predicted Winner: 
+                    <strong>
+                      {{ match.winProbability.player1 > match.winProbability.player2 ? match.player1?.name : match.player2?.name || 'Bye' }}
+                    </strong>
+                  </div>
+                  <div class="mt-2 d-flex justify-center" v-if="match.player1 && match.player2">
+                    <v-btn-toggle
+                      rounded="xl"
+                      v-model="match.selectedWinner"
+                      color="primary"
+                      mandatory
+                      :disabled="!isMatchPlayable(roundIndex, match)"
+                    >
+                      <v-btn
+                        :value="match.player1"
+                        :color="match.player1.color"
+                        @click="() => onSelectWinner(match, match.player1)"
+                      >
+                        {{ match.player1.name }}
+                      </v-btn>
+                      <v-btn
+                        :value="match.player2"
+                        :color="match.player2.color"
+                        @click="() => onSelectWinner(match, match.player2)"
+                      >
+                        {{ match.player2.name }}
+                      </v-btn>
+                    </v-btn-toggle>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-sheet>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
+
+  <v-card v-if="bracket.length > 0" class="mt-4">
+    <v-card-title>Tournament Heatmap</v-card-title>
+    <v-card-text>
+      <v-sheet>
+        <v-row>
+          <v-col cols="12">
+            <div class="table-container">
+              <v-table>
+                <thead>
+                  <tr>
+                    <th style="width: 150px;">Player</th>
+                    <th v-for="(_, roundIndex) in bracket" :key="roundIndex">
+                      {{ getRoundName(roundIndex, bracket.length) }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="player in selectedPlayers" :key="player.name">
+                    <td class="cell-spacing" style="width: 150px;">
+                      <div class="player-container">
+                        <v-avatar size="24" :color="player.color" class="mr-2">
+                          <v-icon size="small">mdi-account</v-icon>
+                        </v-avatar>
+                        <div>
+                          {{ player.name }}
+                          <div class="text-caption">
+                            {{ calculateWinToEndProbability(player) }}% to win
                           </div>
                         </div>
-                      </td>
-                      <td
-                        v-for="(round, roundIndex) in bracket"
-                        :key="roundIndex"
-                        class="text-center cell-spacing"
+                      </div>
+                    </td>
+                    <td
+                      v-for="(round, roundIndex) in bracket"
+                      :key="roundIndex"
+                      class="text-center cell-spacing"
+                    >
+                      <v-card
+                        class="pa-2 ma-0"
+                        outlined
+                        :color="getMatchCardColor(player, round, roundIndex)"
                       >
-                        <v-card
-                          class="pa-2 ma-0"
-                          outlined
-                          :color="getMatchCardColor(player, round, roundIndex)"
-                        >
-                          <div v-if="getPlayerMatch(player, round)">
-                            <div class="match-container">
-                              <v-icon v-if="!getPlayerMatch(player, round)?.opponent">mdi-debug-step-over</v-icon>
-                              <v-icon v-else>mdi-sword-cross</v-icon>
-                              {{ getPlayerMatch(player, round)?.opponent?.name || 'BYE' }}
-                            </div>
+                        <div v-if="getPlayerMatch(player, round)">
+                          <div class="match-container">
+                            <v-icon v-if="!getPlayerMatch(player, round)?.opponent">mdi-debug-step-over</v-icon>
+                            <v-icon v-else>mdi-sword-cross</v-icon>
+                            {{ getPlayerMatch(player, round)?.opponent?.name || 'BYE' }}
                           </div>
-                          <div v-else>-</div>
-                        </v-card>
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-table>
-              </div>
-            </v-col>
-          </v-row>
-        </v-sheet>
-      </v-card-text>
-    </v-card>
+                        </div>
+                        <div v-else>-</div>
+                      </v-card>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </div>
+          </v-col>
+        </v-row>
+      </v-sheet>
+    </v-card-text>
+  </v-card>
 
-    <!-- Drawer for Backup -->
-    <v-navigation-drawer
-      v-model="backupDrawer"
-      right
-      temporary
-      width="400"
-    >
-      <v-card variant="text" class="ma-0 d-flex flex-column" style="height: 100%;">
-        <v-card-title>Generate Tournament CSV</v-card-title>
-        <v-card-text class="flex-grow-1 d-flex">
+  <!-- Drawer for Backup -->
+  <v-navigation-drawer
+    v-model="backupDrawer"
+    right
+    temporary
+    width="400"
+  >
+    <v-card variant="text" class="ma-0 d-flex flex-column" style="height: 100%;">
+      <v-card-title>Generate Tournament CSV</v-card-title>
+      <v-card-text class="flex-grow-1 d-flex">
+        <v-textarea
+          v-model="tournamentCSV"
+          label="Tournament CSV"
+          outlined
+          hide-details
+          class="flex-grow-1"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" block @click="copyToClipboard">
+          Copy to Clipboard
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-navigation-drawer>
+
+  <!-- Drawer for Restore -->
+  <v-navigation-drawer
+    v-model="restoreDrawer"
+    right
+    temporary
+    width="400"
+  >
+    <v-card variant="text" class="ma-0 d-flex flex-column" style="height: 100%;">
+      <v-card-title>Restore Tournament</v-card-title>
+      <v-card-text class="flex-grow-1 d-flex flex-column">
+        <v-tabs v-model="restoreTab" fixed-tabs>
+          <v-tab>Paste CSV</v-tab>
+          <v-tab>Select Tournament</v-tab>
+        </v-tabs>
+        <div v-if="restoreTab === 0" class="flex-grow-1">
           <v-textarea
             v-model="tournamentCSV"
             label="Tournament CSV"
             outlined
             hide-details
-            class="flex-grow-1"
+            style="height: 100%;"
           />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" block @click="copyToClipboard">
-            Copy to Clipboard
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-navigation-drawer>
-
-    <!-- Drawer for Restore -->
-    <v-navigation-drawer
-      v-model="restoreDrawer"
-      right
-      temporary
-      width="400"
-    >
-      <v-card variant="text" class="ma-0 d-flex flex-column" style="height: 100%;">
-        <v-card-title>Restore Tournament</v-card-title>
-        <v-card-text class="flex-grow-1 d-flex flex-column">
-          <v-tabs v-model="restoreTab" fixed-tabs>
-            <v-tab>Paste CSV</v-tab>
-            <v-tab>Select Tournament</v-tab>
-          </v-tabs>
-          <div v-if="restoreTab === 0" class="flex-grow-1">
-            <v-textarea
-              v-model="tournamentCSV"
-              label="Tournament CSV"
-              outlined
-              hide-details
-              style="height: 100%;"
-            />
-          </div>
-          <div v-else class="flex-grow-1">
-            <v-select
-              v-model="selectedTournament"
-              :items="availableTournaments"
-              label="Available Tournaments"
-              item-title="name"
-              item-value="filePath"
-              :hint="selectedTournament ? selectedTournament.filePath : ''"
-              outlined
-              return-object
-            >
-              <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props" :title="item.raw.name">
-                </v-list-item>
-              </template>
-            </v-select>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            color="primary"
-            block
-            @click="restoreTournament"
-            :disabled="restoreTab === 0 ? !tournamentCSV.trim() : !selectedTournament"
+        </div>
+        <div v-else class="flex-grow-1">
+          <v-select
+            v-model="selectedTournament"
+            :items="availableTournaments"
+            label="Available Tournaments"
+            item-title="name"
+            item-value="filePath"
+            :hint="selectedTournament ? selectedTournament.filePath : ''"
+            outlined
+            return-object
           >
-            Restore Tournament
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-navigation-drawer>
-  </v-container>
+            <template v-slot:item="{ item, props }">
+              <v-list-item v-bind="props" :title="item.raw.name">
+              </v-list-item>
+            </template>
+          </v-select>
+        </div>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+          color="primary"
+          block
+          @click="restoreTournament"
+          :disabled="restoreTab === 0 ? !tournamentCSV.trim() : !selectedTournament"
+        >
+          Restore Tournament
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-navigation-drawer>
 </template>
 
 <script lang="ts">
