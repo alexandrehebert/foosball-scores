@@ -36,7 +36,7 @@
         <v-col cols="12" md="4">
           <v-btn 
             v-if="!tournamentStarted" 
-            color="primary" 
+            color="success" 
             block 
             @click="startTournament" 
             :disabled="selectedPlayers.length < 2 || bracket.length > 0"
@@ -53,7 +53,7 @@
           </v-btn>
         </v-col>
         <v-col cols="12" md="4">
-          <v-btn color="primary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
+          <v-btn color="secondary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
             Generate Tournament
           </v-btn>
         </v-col>
