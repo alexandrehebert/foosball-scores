@@ -203,8 +203,11 @@ export default defineComponent({
         .map(({ change }) => change);
     },
     winStreak(player: Player) {
-      console.log(this.getEloChanges(player))
-      return this.getEloChanges(player)
+      return this.eloChanges
+        .filter((change) => change.player === player.name && change.type === 'match')
+        .sort((a, b) => compareAsc(a.date, b.date))
+        .slice(-10)
+        .map(({ change }) => change)
         .reduce((streak, change) => {
           if (change > 0) {
             streak++;
