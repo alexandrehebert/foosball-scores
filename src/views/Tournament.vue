@@ -54,7 +54,7 @@
         </v-col>
         <v-col cols="12" md="4">
           <v-btn color="secondary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
-            Generate Tournament
+            Backup Tournament
           </v-btn>
         </v-col>
         <v-col cols="12" md="4">
