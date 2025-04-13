@@ -57,7 +57,7 @@
         <tr :class="getTeamPodiumColor(item)">
           <td>{{ item.rank }}</td>
           <td class="player-container">
-            <TeamAvatarBtn :team="item" @click="openTeamCard(item)" />
+            <TeamAvatarBtn :team="item" />
             <div class="ml-2 flex-grow-1">
               {{ item.members.join(' & ') }}
             </div>
