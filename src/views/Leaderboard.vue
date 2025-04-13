@@ -6,7 +6,7 @@
           <td>
             <div class="rank-container">
               <span v-if="!item.isInPlacement">{{ item.rank }}</span>
-              <v-icon v-if="item.rankVariation !== null && !item.isInPlacement" :class="getRankVariationClass(item.rankVariation)"
+              <v-icon v-if="item.rankVariation !== null && item.rankVariation !== 0 && !item.isInPlacement" :class="getRankVariationClass(item.rankVariation)"
                 :title="'Rank variation: ' + (item.rankVariation > 0 ? '+' + item.rankVariation : item.rankVariation)"
                 size="x-small">
                 {{ getRankVariationIcon(item.rankVariation) }}
