@@ -168,6 +168,13 @@ export default defineComponent({
       return allMatches.value
       .filter((match) => selectedMatchType.value === null || match.type === selectedMatchType.value)
       .filter((match) => {
+        if (selectedBlue.value && selectedRed.value) {
+          const blueTeam = match.opponents.blue.includes(selectedBlue.value.name) && match.opponents.blue.includes(selectedRed.value.name);
+          const redTeam = match.opponents.red.includes(selectedBlue.value.name) && match.opponents.red.includes(selectedRed.value.name);
+          if (blueTeam || redTeam) {
+            return false;
+          }
+        }
         const blueMatches =
           !selectedBlue.value ||
           match.opponents.blue.includes(selectedBlue.value.name) || 
