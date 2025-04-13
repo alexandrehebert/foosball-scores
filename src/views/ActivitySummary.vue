@@ -89,7 +89,6 @@ import { DECAY_PERIOD_DAYS } from '../constants';
 import { formatDay } from '../utils/dates';
 import { Player } from '../types';
 import { startOfMonth, isSameMonth, compareAsc } from 'date-fns';
-import { pl } from 'date-fns/locale';
 
 export default defineComponent({
   name: 'ActivitySummary',
