@@ -400,7 +400,6 @@ export default defineComponent({
     };
 
     const hasWinner = (match: Round) => {
-      console.log(match, match.previousMatches);
       return match.selectedWinner || (!match.previousMatches.length && (!match.player1 || !match.player2));
     };
 
