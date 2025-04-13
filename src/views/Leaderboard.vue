@@ -57,7 +57,7 @@
 
   <!-- Team Rankings -->
   <v-card>
-    <v-data-table :headers="teamsHeaders" :items="teams" item-value="team" :items-per-page="-1" hide-default-footer>
+    <v-data-table :headers="teamsHeaders" :items="filteredTeams" item-value="team" :items-per-page="-1" hide-default-footer>
       <template #item="{ item }">
         <tr :class="getTeamPodiumColor(item)">
           <td>{{ item.rank }}</td>
@@ -86,6 +86,7 @@
         </tr>
       </template>
     </v-data-table>
+    <v-btn v-if="hasMoreTeams" @click="showMoreTeams" block class="d-flex mt-2" style="justify-self: center;" variant="text">Show More</v-btn>
   </v-card>
 
   <PlayerCard :isOpen="isPlayerCardOpen" :player="selectedPlayer" @update:isOpen="isPlayerCardOpen = $event" />
@@ -131,6 +132,12 @@ export default defineComponent({
         .filter((item) => !item.isInPlacement)
         .slice(0, 3).map((item) => item);
     },
+    filteredTeams() {
+      return this.teams.slice(0, this.teamsToShow);
+    },
+    hasMoreTeams() {
+      return this.teamsToShow < this.teams.length;
+    }
   },
   setup() {
     const store = useFoosballStore();
@@ -183,6 +190,7 @@ export default defineComponent({
       isTeamCardOpen: false,
       selectedTeam: { members: [] as string[], rank: 0 },
       isSimulateMatchDialogOpen: false,
+      teamsToShow: 5, // Initial number of teams to show
     };
   },
   methods: {
@@ -251,6 +259,9 @@ export default defineComponent({
     },
     openSimulateMatchDialog() {
       this.isSimulateMatchDialogOpen = true;
+    },
+    showMoreTeams() {
+      this.teamsToShow += 5;
     },
   },
 });
