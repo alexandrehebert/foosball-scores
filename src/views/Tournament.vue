@@ -2,7 +2,7 @@
   <v-card variant="outlined" class="mb-4">
     <v-card-title>Select Tournament Players</v-card-title>
     <v-card-text>
-      <v-autocomplete
+      <v-select
         v-model="selectedPlayers"
         :items="allPlayers"
         item-text="name"
@@ -31,7 +31,7 @@
             {{ item.raw.name }}
           </v-list-item>
         </template>
-      </v-autocomplete>
+      </v-select>
       <v-row class="mt-2">
         <v-col cols="12" md="4">
           <v-btn 
