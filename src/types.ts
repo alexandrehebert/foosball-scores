@@ -51,7 +51,7 @@ export type Player = {
 
 export type Team = {
   members: string[]; // Array of player names
-  rank: number | null; // Rank can be null if not ranked or in placement
+  rank: number | null; // Rank can be null if not ranked
 }
 
 export type Players = Record<string, Player>;
