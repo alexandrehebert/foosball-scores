@@ -311,7 +311,7 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref, reactive, onMounted } from 'vue';
-import { generateTournamentBracket, generateTournamentCSV, restoreTournamentCSV } from '../services/tournamentService';
+import { fetchTournamentData, generateTournamentBracket, generateTournamentCSV, restoreTournamentCSV } from '../services/tournamentService';
 import SimulationPlayerCard from '../components/SimulationPlayerCard.vue';
 import { useFoosballStore } from '../store';
 import { Player, Round } from '../types';
@@ -571,10 +571,8 @@ export default defineComponent({
         selectedPlayers.value = restoredPlayers;
       } else if (restoreTab.value === 1 && selectedTournament.value) {
         // Restore from selected tournament
-        const response = await fetch(selectedTournament.value.filePath);
-        const csvContent = await response.text();
-        const { bracket: restoredBracket, selectedPlayers: restoredPlayers } = restoreTournamentCSV(
-          csvContent,
+        const { bracket: restoredBracket, selectedPlayers: restoredPlayers } = await fetchTournamentData(
+          selectedTournament.value,
           store.players
         );
         bracket.splice(0, bracket.length, ...restoredBracket);

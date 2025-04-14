@@ -63,6 +63,11 @@ export type TeamRankingItem = {
   losses: number;
 };
 
+export type Tournament = {
+  name: string;
+  filePath: string;
+};
+
 export type Round = {
   id: string;
   player1?: Player;

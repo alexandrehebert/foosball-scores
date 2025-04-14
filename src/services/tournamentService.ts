@@ -1,7 +1,7 @@
-import { Player, Round } from '../types';
+import { Player, Round, Tournament } from '../types';
 import { parseISO } from 'date-fns';
 import { parseCSV } from '../utils/csv';
-import { API_ENDPOINT, GITHUB_REPOSITORY_DATA_FOLDER } from '../constants';
+import { API_ENDPOINT } from '../constants';
 
 export function generateTournamentBracket(players: Player[]) {
   const bracket: Round[][] = [];
@@ -116,48 +116,10 @@ export type TournamentMatchRow = {
   previous_match2?: string;
 };
 
-export async function fetchTournamentData(players: Record<string, Player>): Promise<{ name: string; rounds: Round[][] }[]> {
-  const tournament = 'summer-cup';
-  const response = await fetch(GITHUB_REPOSITORY_DATA_FOLDER + '/tournaments/' + tournament + '.csv');
+export async function fetchTournamentData(tournament: Tournament, players: Record<string, Player>): Promise<{ bracket: Round[][], selectedPlayers: Player[] }> {
+  const response = await fetch(`${API_ENDPOINT}/${tournament.filePath}`);
   const csvContent = await response.text();
-
-  const matches = parseCSV<TournamentMatchRow>(csvContent).rows.map((row) => ({
-    matchId: row.id,
-    tournamentName: tournament,
-    round: +row.round,
-    player1: row.player1,
-    player2: row.player2,
-    winner: row.winner,
-    date: parseISO(row.date),
-  }));
-
-  const tournaments = matches.reduce((acc, match) => {
-    const tournament = acc.find((t) => t.name === match.tournamentName);
-    if (!tournament) {
-      acc.push({ name: match.tournamentName, matches: [match] });
-    } else {
-      tournament.matches.push(match);
-    }
-    return acc;
-  }, [] as { name: string; matches: any[] }[]);
-
-  return tournaments.map((tournament) => {
-    const rounds = tournament.matches.reduce((acc, match) => {
-      const roundIndex = match.round - 1;
-      if (!acc[roundIndex]) acc[roundIndex] = [];
-      acc[roundIndex].push({
-        id: match.matchId,
-        player1: players[match.player1] || undefined,
-        player2: players[match.player2] || undefined,
-        winProbability: { player1: 0.5, player2: 0.5 }, // Default probabilities
-        previousMatches: [], // Can be populated if needed
-        selectedWinner: match.winner ? players[match.winner] : undefined,
-      });
-      return acc;
-    }, [] as Round[][]);
-
-    return { name: tournament.name, rounds };
-  });
+  return parseTournamentCSV(csvContent, players);
 }
 
 export async function fetchAvailableTournaments(): Promise<{ name: string; filePath: string }[]> {

@@ -106,7 +106,7 @@
       class="fab-button"
     >
       <v-icon>mdi-sword-cross</v-icon>
-      <v-speed-dial v-model="open" location="top center" activator="parent" open-on-hover>
+      <v-speed-dial v-model="open" location="top center" activator="parent" open-on-hover open-on-click>
         <v-tooltip v-for="(item, index) in MATCH_TYPES" :key="index">
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" icon color="secondary" @click="redirectToGitHub(item.type)">
