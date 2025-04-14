@@ -203,11 +203,11 @@ export default defineComponent({
       if (item.isInPlacement) return ''; // Placement players should not have podium colors
       switch (this.podium.indexOf(item)) {
         case 0:
-          return 'gold-row';
+          return 'bg-medal-gold';
         case 1:
-          return 'silver-row';
+          return 'bg-medal-silver';
         case 2:
-          return 'bronze-row';
+          return 'bg-medal-bronze';
         default:
           return '';
       }
@@ -215,11 +215,11 @@ export default defineComponent({
     getTeamPodiumColor(item: { rank: number }) {
       switch (item.rank) {
         case 1:
-          return 'gold-row';
+          return 'bg-medal-gold';
         case 2:
-          return 'silver-row';
+          return 'bg-medal-silver';
         case 3:
-          return 'bronze-row';
+          return 'bg-medal-bronze';
         default:
           return '';
       }
@@ -277,18 +277,6 @@ export default defineComponent({
 
 .sub-line {
   margin-top: 8px;
-}
-
-.gold-row {
-  background-color: #ffd700;
-}
-
-.silver-row {
-  background-color: #c0c0c0;
-}
-
-.bronze-row {
-  background-color: #cd7f32;
 }
 
 .rank-up {
