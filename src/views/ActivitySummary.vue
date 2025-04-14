@@ -2,15 +2,15 @@
     <v-card v-if="isCurrentMonthInSeason" color="secondary">
       <v-container>
         <v-row class="flex-wrap">
-          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+          <v-col cols="12" sm="12" md="4" class="text-center mb-4 mb-md-0">
             <div class="text-h5">Players of the Month</div>
             <v-icon color="#ffd700">mdi-star-outline</v-icon>
           </v-col>
-          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+          <v-col cols="12" md="4" sm="6" class="text-center mb-4 mb-md-0">
             <div class="text-h6">Highest ELO Gain</div>
             <div>{{ highestEloGainPlayer.name }} ({{ highestEloGainPlayer.eloGain }} ELO)</div>
           </v-col>
-          <v-col cols="12" md="4" class="text-center mb-4 mb-md-0">
+          <v-col cols="12" md="4" sm="6" class="text-center mb-4 mb-md-0">
             <div class="text-h6">Most Active Player</div>
             <div>{{ mostActivePlayer.name }} ({{ mostActivePlayer.matchesPlayed }} matches)</div>
           </v-col>

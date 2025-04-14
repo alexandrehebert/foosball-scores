@@ -52,12 +52,12 @@
             End Tournament
           </v-btn>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="4" sm="6">
           <v-btn color="secondary" block @click="generateTournamentCSV" :disabled="bracket.length === 0">
             Backup Tournament
           </v-btn>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="4" sm="6">
           <v-btn color="secondary" block @click="openRestoreDrawer">
             Restore Tournament
           </v-btn>
