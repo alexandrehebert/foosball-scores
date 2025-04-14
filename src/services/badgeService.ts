@@ -431,7 +431,7 @@ export const BADGES = [
     category: 'resilience', // Category: Resilience
     color: CATEGORY_COLORS.resilience,
     criteria: (player: string, matches: MatchWithEloChanges[]) => {
-      const decays = calculateDecays(matches, { [player]: { name: player, elo: 0, rank: 0, color: '' } });
+      const decays = calculateDecays(matches, { [player]: { name: player, elo: 0, color: '' } });
       return decays.some(decay => decay.player === player);
     },
   },

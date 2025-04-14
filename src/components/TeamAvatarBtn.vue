@@ -11,7 +11,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import TeamCard from './TeamCard.vue';
-import { type Team } from '../types';
+import { type TeamRankingItem } from '../types';
 import { getTeamColor } from '../utils/color';
 
 export default defineComponent({
@@ -26,7 +26,7 @@ export default defineComponent({
     },
     props: {
         team: {
-            type: Object as PropType<Team>,
+            type: Object as PropType<TeamRankingItem>,
             required: true,
         },
     },

@@ -8,7 +8,7 @@
               <v-icon>mdi-account</v-icon>
             </v-avatar>
             <span class="text-h6">{{ player.name }}</span>
-            <div class="text-subtitle-2">ELO: {{ player.elo }} | Rank: {{ player.rank }}</div>
+            <div class="text-subtitle-2">ELO: {{ player.elo }} | {{ playerRank ? 'Rank: ' + playerRank : 'Unranked' }}</div>
           </div>
           <div class="d-flex flex-column align-end">
             <v-progress-circular
@@ -118,9 +118,12 @@ export default defineComponent({
     const allMatches = computed(() => store.matchResults);
     const allEloChanges = computed(() => store.eloChanges);
 
-    return { allMatches, allEloChanges };
+    return { allMatches, allEloChanges, store };
   },
   computed: {
+    playerRank() {
+      return this.store.leaderboard.find(player => player.player.name === this.player.name)?.rank;
+    },
     matches() {
       return this.allMatches.filter((match) => match.opponents.blue.includes(this.player.name) || match.opponents.red.includes(this.player.name))
         .slice(-5)

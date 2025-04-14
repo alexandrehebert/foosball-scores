@@ -32,7 +32,7 @@ export type LeaderboardItem = {
   last10TeamResults: MatchResult[];
   last10IndividualMatches: MatchWithEloChanges[];
   last10TeamMatches: MatchWithEloChanges[];
-  isInPlacement: boolean; // New property to indicate placement status
+  placement: 'ranked' | 'unranked'; // New property to indicate placement status
 };
 
 export type EloChangeEvent = {
@@ -46,21 +46,22 @@ export type Player = {
   name: string;
   elo: number;
   color: string;
-  rank: number | null; // Rank can be null if not ranked or in placement
 }
 
 export type Team = {
   members: string[]; // Array of player names
-  rank: number | null; // Rank can be null if not ranked
 }
 
 export type Players = Record<string, Player>;
 
 export type TeamRankingItem = {
   rank: number;
-  team: string[];
+  members: string[];
   wins: number;
   losses: number;
+  elo: number;
+  last10Results: string[];
+  last10Matches: MatchWithEloChanges[];
 };
 
 export type Tournament = {

@@ -2,11 +2,11 @@
   <v-card class="mb-4">
     <v-data-table :headers="headers" :items="leaderboard" item-value="rankId" :items-per-page="-1" hide-default-footer>
       <template #item="{ item }">
-        <tr :class="[getPodiumColor(item), { 'placement-row': item.isInPlacement }]">
+        <tr :class="[getPodiumColor(item), { 'placement-row': item.placement === 'unranked' }]">
           <td>
             <div class="rank-container">
-              <span v-if="!item.isInPlacement">{{ item.rank }}</span>
-              <v-icon v-if="item.rankVariation !== null && item.rankVariation !== 0 && !item.isInPlacement" :class="getRankVariationClass(item.rankVariation)"
+              <span v-if="item.placement === 'ranked'">{{ item.rank }}</span>
+              <v-icon v-if="item.rankVariation !== null && item.rankVariation !== 0 && item.placement === 'ranked'" :class="getRankVariationClass(item.rankVariation)"
                 :title="'Rank variation: ' + (item.rankVariation > 0 ? '+' + item.rankVariation : item.rankVariation)"
                 size="x-small">
                 {{ getRankVariationIcon(item.rankVariation) }}
@@ -20,7 +20,7 @@
                 {{ item.player.name }}
                 <v-tooltip bottom>
                   <template #activator="{ props }">
-                    <v-icon v-if="item.isInPlacement" class="placement-icon" size="small" v-bind="props">
+                    <v-icon v-if="item.placement === 'unranked'" class="placement-icon" size="small" v-bind="props">
                       mdi-information
                     </v-icon>
                   </template>
@@ -65,6 +65,7 @@
               mdi-trophy-award
             </v-icon>
           </td>
+          <td>{{ item.elo }}</td>
           <td class="last-10-matches">
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10Results)" :key="i"
@@ -79,7 +80,7 @@
     <v-btn v-if="hasMoreTeams" @click="showMoreTeams" block class="d-flex mt-2" style="justify-self: center;" variant="text">Show More</v-btn>
   </v-card>
 
-  <TeamCard :isOpen="isTeamCardOpen" :team="selectedTeam" @update:isOpen="isTeamCardOpen = $event" />
+  <TeamCard v-if="selectedTeam" :isOpen="isTeamCardOpen" :team="selectedTeam" @update:isOpen="isTeamCardOpen = $event" />
 </template>
 
 <script lang="ts">
@@ -90,22 +91,22 @@ import PlayerCard from '../components/PlayerCard.vue';
 import TeamCard from '../components/TeamCard.vue';
 import PlayerAvatarBtn from '../components/PlayerAvatarBtn.vue';
 import TeamAvatarBtn from '../components/TeamAvatarBtn.vue';
-import { LeaderboardItem } from '../types';
-import { getPlayerColor } from '../utils/color';
+import { LeaderboardItem, TeamRankingItem } from '../types';
 import { generateTeamRankings } from '../services/eloService';
 
 const HEADERS = [
   { title: 'Rank', key: 'rank', width: '40px' },
   { title: 'Player', key: 'player.name' },
   { title: 'ELO Score', key: 'player.elo', width: '40px' },
-  { title: 'Last 10 Individual Matches', key: 'last10IndividualResults' },
-  { title: 'Last 10 Team Matches', key: 'last10TeamResults' },
+  { title: 'Last 10 Individual Matches', key: 'last10IndividualResults', sortable: false },
+  { title: 'Last 10 Team Matches', key: 'last10TeamResults', sortable: false },
 ];
 
 const TEAMS_HEADERS = [
   { title: 'Rank', key: 'rank', width: '40px' },
-  { title: 'Team', key: 'team' },
-  { title: 'Last 10 Matches', key: 'last10Results' },
+  { title: 'Team', key: 'team', sortable: false },
+  { title: 'ELO Combined', key: 'elo', width: '40px' },
+  { title: 'Last 10 Matches', key: 'last10Results', sortable: false },
   { title: 'Wins', key: 'wins', width: '40px' },
   { title: 'Losses', key: 'losses', width: '40px' },
 ];
@@ -113,12 +114,6 @@ const TEAMS_HEADERS = [
 export default defineComponent({
   name: 'Leaderboard',
   computed: {
-    podium() {
-      // Create podium data excluding placement players
-      return this.leaderboard
-        .filter((item) => !item.isInPlacement)
-        .slice(0, 3).map((item) => item);
-    },
     filteredTeams() {
       return this.teams.slice(0, this.teamsToShow);
     },
@@ -131,7 +126,7 @@ export default defineComponent({
     const players = computed(() => store.leaderboard);
     const matches = computed(() => store.matchResults);
     const eloChanges = computed(() => store.eloChanges);
-    const teams = computed(() => generateTeamRankings(store.matchResults));
+    const teams = computed(() => generateTeamRankings(store.matchResults, store.players));
 
     const leaderboard = computed(() => players.value);
 
@@ -173,9 +168,8 @@ export default defineComponent({
   data() {
     return {
       isPlayerCardOpen: false,
-      selectedPlayer: { name: '', elo: 0, rank: 0 as number | null, color: '' },
       isTeamCardOpen: false,
-      selectedTeam: { members: [] as string[], rank: 0 },
+      selectedTeam: undefined as (TeamRankingItem | undefined),
       isSimulateMatchDialogOpen: false,
       teamsToShow: 5, // Initial number of teams to show
     };
@@ -191,16 +185,16 @@ export default defineComponent({
       return 'rgba(211, 211, 211, 0.5)';
     },
     isLeader(item: LeaderboardItem) {
-      return this.podium[0] && item.player.name === this.podium[0].player.name;
+      return item.rank === 1;
     },
     getPodiumColor(item: LeaderboardItem) {
-      if (item.isInPlacement) return ''; // Placement players should not have podium colors
-      switch (this.podium.indexOf(item)) {
-        case 0:
-          return 'bg-medal-gold';
+      if (item.placement === 'unranked') return ''; // Placement players should not have podium colors
+      switch (item.rank) {
         case 1:
-          return 'bg-medal-silver';
+          return 'bg-medal-gold';
         case 2:
+          return 'bg-medal-silver';
+        case 3:
           return 'bg-medal-bronze';
         default:
           return '';
@@ -224,21 +218,9 @@ export default defineComponent({
     getRankVariationClass(variation: number) {
       return variation > 0 ? 'rank-up' : 'rank-down';
     },
-    openPlayerCard(player: LeaderboardItem) {
-      this.selectedPlayer = {
-        name: player.player.name,
-        elo: player.player.elo,
-        rank: player.rank,
-        color: player.player.color,
-      };
-      this.isPlayerCardOpen = true;
-    },
-    openTeamCard(team: { members: string[]; rank: number }) {
+    openTeamCard(team: TeamRankingItem) {
       this.selectedTeam = team;
       this.isTeamCardOpen = true;
-    },
-    getPlayerColor(playerName: string) {
-      return getPlayerColor(playerName);
     },
     openSimulateMatchDialog() {
       this.isSimulateMatchDialogOpen = true;

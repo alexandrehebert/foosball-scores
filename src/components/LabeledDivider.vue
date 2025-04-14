@@ -1,5 +1,5 @@
 <template>
-  <v-row wrap no-gutters align="center" :style="{ margin: '1.3rem 0 .7rem 0' }">
+  <v-row wrap no-gutters class="align-center" :style="{ margin: '1.3rem 0 .7rem 0' }">
     <v-col>
       <v-divider />
     </v-col>

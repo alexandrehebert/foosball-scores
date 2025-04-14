@@ -47,7 +47,7 @@
         >
           <v-card
             :variant="isPlayerInactive(player) ? 'plain' : 'text'"
-            :subtitle="'ELO: ' + player.elo + ' | Rank: ' + player.rank"
+            :subtitle="'ELO: ' + player.elo + ' | ' + (player.rank ? 'Rank: ' + player.rank : 'Unranked')"
             @click="openPlayerCard(player)"
             class="pb-4 position-relative"
           >
@@ -148,13 +148,15 @@ watch: {
 setup() {
   const store = useFoosballStore();
   const playersWithRank = computed(() => {
-    return Object.values(store.players)
-      .sort((a, b) => b.elo - a.elo)
-      .map((player, index) => ({
+    const players = Object.values(store.players);
+    return players
+      .map(player => ({
         ...player,
-        rank: index + 1,
         color: player.color || 'default',
-      }));
+        rank: store.leaderboard.find(entry => entry.player.name === player.name)?.rank,
+      }))
+      .sort((a, b) => (a.rank ? a.rank : players.length + 1)
+        - (b.rank ? b.rank : players.length + 1));
   });
   const allMatches = computed(() => store.matchResults);
 

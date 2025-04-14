@@ -12,6 +12,7 @@ export const TEAMS = {
 export const DEFAULT_ELO = 1000;
 export const DECAY_RATE = 5;
 export const DECAY_PERIOD_DAYS = 3;
+export const PLACEMENT_MATCHES_COUNT = 5;
 
 export const IS_GH_PAGES = import.meta.env.VITE_IS_GH_PAGES === 'true';
 export const BASE_URL = import.meta.env.VITE_BASE_URL || '.';

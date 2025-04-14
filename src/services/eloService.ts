@@ -9,8 +9,10 @@ import {
   LeaderboardItem,
   Players,
   MatchResult,
+  Player,
+  TeamRankingItem,
 } from "../types";
-import { DEFAULT_ELO, DECAY_PERIOD_DAYS, DECAY_RATE } from '../constants';
+import { DEFAULT_ELO, DECAY_PERIOD_DAYS, DECAY_RATE, PLACEMENT_MATCHES_COUNT } from '../constants';
 import { formatDay, parseDay } from '../utils/dates';
 
 export function getDynamicKFactor(winnerElo: number, loserElo: number): number {
@@ -32,7 +34,6 @@ export function getDynamicKFactor(winnerElo: number, loserElo: number): number {
 function getPlayer(players: Players, player: string) {
   if (!players[player]) {
     players[player] = {
-      rank: 0,
       name: player,
       elo: DEFAULT_ELO,
       color: getPlayerColor(player),
@@ -233,14 +234,15 @@ export function generateELOChartData(players: Players, eloChanges: EloChangeEven
   return { labels, datasets };
 }
 
-function generateLastELOs(
-  players: Players,
+function generatePreviousRanking(
+  players: Player[],
   eloChanges: EloChangeEvent[]
-) {
-  if (!eloChanges[eloChanges.length - 1]) return {};
+): { name: string, elo: number, lastElo: number }[] {
+  if (!eloChanges[eloChanges.length - 1]) return [];
 
-  const lastCompetitionDay = formatDay(eloChanges[eloChanges.length - 1].date)
-  const lastELOs = Object.values(players).map(({ name, elo }) => ({
+  const lastCompetitionDay = formatDay(eloChanges[eloChanges.length - 1].date);
+  
+  const lastELOs = players.map(({ name, elo }) => ({
     name, elo, lastElo: elo,
   })).reduce((acc, { name, elo }) => {
     acc[name] = elo;
@@ -253,7 +255,13 @@ function generateLastELOs(
       lastELOs[player] -= change;
     });
   
-  return lastELOs;
+  return Object.entries(lastELOs)
+    .map(([name, elo]) => ({
+      name,
+      elo,
+      lastElo: elo,
+    }))
+    .sort((a, b) => b.lastElo - a.lastElo);
 }
 
 export function generateLeaderboard(
@@ -261,11 +269,8 @@ export function generateLeaderboard(
   matchResults: MatchWithEloChanges[],
   eloChanges: EloChangeEvent[]
 ): LeaderboardItem[] {
-  const lastELOs = generateLastELOs(players, eloChanges);
-  const previousRanking = Object.values(players)
-    .sort((a, b) => lastELOs[b.name] - lastELOs[a.name]);
 
-  const leaderboard = Object.values(players)
+  const { ranked, unranked } = groupBy(Object.values(players)
     .map((player) => {
       const playerMatches = matchResults.filter(
         (match) =>
@@ -288,34 +293,39 @@ export function generateLeaderboard(
       const last10TeamMatches = teamMatches.slice(-10);
 
       const totalMatchesPlayed = playerMatches.length;
-      const isInPlacement = totalMatchesPlayed < 5; // Mark players with fewer than 5 matches as in placement
-
       return {
         player,
         last10IndividualResults,
         last10TeamResults,
         last10IndividualMatches,
         last10TeamMatches,
-        isInPlacement,
+        // Mark players with fewer than 5 matches as in placement
+        placement: totalMatchesPlayed >= PLACEMENT_MATCHES_COUNT ? 'ranked' as const : 'unranked' as const,
       };
-    })
+    }), 'placement');
+
+  const previousRanking = generatePreviousRanking(ranked.map(({ player }) => player), eloChanges);
+  
+  const placedLeaderboard = ranked
     .sort((a, b) => b.player.elo - a.player.elo)
     .map((item, index) => ({
       ...item,
-      rank: item.isInPlacement ? null : index + 1, // Assign rank only to non-placement players
-      potentialRank: index + 1, // Add potential rank for placement players
-      rankVariation: item.isInPlacement
-        ? null
-        : previousRanking.findIndex(({ name }) => name === item.player.name) - index,
+      rank: index + 1, // Assign rank only to non-placement players
+      rankVariation: previousRanking.findIndex(({ name }) => name === item.player.name) - index,
     }));
 
-  leaderboard.forEach((item) => {
-    if (!item.isInPlacement) {
-      players[item.player.name].rank = item.rank;
-    }
-  });
+  const inPlacementLeaderboard = unranked
+    .sort((a, b) => b.player.elo - a.player.elo)
+    .map((item) => ({
+      ...item,
+      rank: null, // Assign null rank to placement players
+      rankVariation: null, // No rank variation for placement players
+    }));
 
-  return leaderboard;
+  return [
+    ...placedLeaderboard,
+    ...inPlacementLeaderboard,
+  ];
 }
 
 function normalizeTeam(players: string[]): string {
@@ -323,8 +333,9 @@ function normalizeTeam(players: string[]): string {
 }
 
 export function generateTeamRankings(
-  matchResults: MatchWithEloChanges[]
-): { rank: number; members: string[]; wins: number; losses: number; last10Results: string[]; last10Matches: MatchWithEloChanges[] }[] {
+  matchResults: MatchWithEloChanges[],
+  players: Players,
+): TeamRankingItem[] {
   const teamStats: Record<string, { wins: number; losses: number; results: string[]; matches: MatchWithEloChanges[] }> = {};
 
   matchResults
@@ -359,6 +370,7 @@ export function generateTeamRankings(
       losses: stats.losses,
       last10Results: stats.results.slice(-10),
       last10Matches: stats.matches.slice(-10),
+      elo: team.split(',').map((player) => players[player].elo).reduce((a, b) => a + b, 0) / team.split(',').length,
     }))
     .sort((a, b) => (b.wins / (b.wins + b.losses)) - (a.wins / (a.wins + a.losses)) || b.wins - a.wins || a.losses - b.losses)
     .map((item, index) => ({
