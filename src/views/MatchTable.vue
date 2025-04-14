@@ -106,18 +106,43 @@
       class="fab-button"
     >
       <v-icon>mdi-sword-cross</v-icon>
-      <v-speed-dial v-model="open" location="top center" activator="parent" open-on-hover open-on-click>
-        <v-tooltip v-for="(item, index) in MATCH_TYPES" :key="index">
-          <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" icon color="secondary" @click="redirectToGitHub(item.type)">
+      <v-speed-dial
+        v-model="open"
+        location="top center"
+        activator="parent"
+        open-on-hover
+        open-on-click
+        :transition="false"
+      >
+        <template v-slot:default>
+          <div class="speed-dial-items">
+            <v-btn
+              v-for="(item, index) in MATCH_TYPES"
+              :key="index"
+              icon
+              block
+              color="secondary"
+              @click="redirectToGitHub(item.type)"
+            >
+              <v-tooltip activator="parent">
+                <span>{{ item.label }}</span>
+              </v-tooltip>
               <v-icon size="24">{{ item.icon }}</v-icon>
             </v-btn>
-          </template>
-          <span>{{ item.label }}</span>
-        </v-tooltip>
+            
+            <v-btn icon color="secondary" @click="openSimulateMatchDialog">
+              <v-tooltip activator="parent">
+                <span>Match Simulation</span>
+              </v-tooltip>
+              <v-icon size="24">mdi-gamepad-variant</v-icon>
+            </v-btn>
+          </div>
+        </template>
       </v-speed-dial>
     </v-btn>
   </div>
+
+  <MatchSimulationDialog v-model:isDialogOpen="isSimulateMatchDialogOpen" />
 </template>
 
 <script lang="ts">
@@ -125,6 +150,7 @@ import { defineComponent, computed, ref, shallowRef } from 'vue';
 import { useFoosballStore } from '../store';
 import EloDisplay from '../components/EloDisplay.vue';
 import FloatingButton from '../components/FloatingButton.vue';
+import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
 import { formatDate } from '../utils/dates';
 import { MatchType, MatchWithEloChanges, Player } from '../types';
 import { compareAsc } from 'date-fns';
@@ -135,8 +161,8 @@ export default defineComponent({
   computed: {
     MATCH_TYPES() {
       return [
-        { type: MatchType.INDIVIDUAL, label: 'Individual', icon: 'mdi-account' },
-        { type: MatchType.TEAM, label: 'Team', icon: 'mdi-account-group' },
+        { type: MatchType.INDIVIDUAL, label: 'Add Individual Match', icon: 'mdi-account' },
+        { type: MatchType.TEAM, label: 'Add Team Match', icon: 'mdi-account-group' },
       ];
     },
   },
@@ -202,7 +228,13 @@ export default defineComponent({
       selectedRed.value = null;
     };
     
-    const open = shallowRef(false)
+    const open = shallowRef(false);
+
+    const isSimulateMatchDialogOpen = ref(false);
+
+    const openSimulateMatchDialog = () => {
+      isSimulateMatchDialogOpen.value = true;
+    };
 
     return {
       open,
@@ -216,11 +248,14 @@ export default defineComponent({
       formatDate,
       isWinner,
       clearFilters,
+      isSimulateMatchDialogOpen,
+      openSimulateMatchDialog,
     };
   },
   components: {
     EloDisplay,
     FloatingButton,
+    MatchSimulationDialog,
   },
 });
 </script>
@@ -247,5 +282,10 @@ export default defineComponent({
   bottom: 1.5rem;
   right: 1.5rem;
   z-index: 1000;
+}
+.speed-dial-items {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
 }
 </style>

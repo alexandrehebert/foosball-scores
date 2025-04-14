@@ -1,9 +1,9 @@
 <template>
   <v-dialog
-    v-model="isDialogOpen"
+    :model-value="isDialogOpen"
     max-width="500"
     :persistent="false"
-    @click:outside="$emit('update:isDialogOpen', false)"
+    @update:model-value="$emit('update:isDialogOpen', $event)"
   >
     <v-card>
       <v-card-title>Match Simulation</v-card-title>
