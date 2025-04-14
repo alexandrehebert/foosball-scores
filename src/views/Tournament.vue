@@ -579,6 +579,7 @@ export default defineComponent({
         selectedPlayers.value = restoredPlayers;
       }
       restoreDrawer.value = false; // Close the drawer after restoring
+      tournamentStarted.value = true; // Set tournament as started
     };
 
     const openRestoreDrawer = () => {
