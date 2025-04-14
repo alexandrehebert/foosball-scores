@@ -59,7 +59,7 @@
             </template>
             <template v-slot:item="{ props, item }">
               <v-list-item v-bind="props" :title="''">
-                <v-icon>{{ item.raw.icon }}</v-icon>
+                <v-icon class="mr-1">{{ item.raw.icon }}</v-icon>
                 {{ item.raw.label }}
               </v-list-item>
             </template>
@@ -116,20 +116,18 @@
       >
         <template v-slot:default>
           <div class="speed-dial-items">
-            <v-btn
-              v-for="(item, index) in MATCH_TYPES"
-              :key="index"
-              icon
-              block
-              color="secondary"
-              @click="redirectToGitHub(item.type)"
-            >
+            <v-btn icon color="secondary" @click="redirectToGitHub(MatchType.INDIVIDUAL)"">
               <v-tooltip activator="parent">
-                <span>{{ item.label }}</span>
+                <span>Add Team Match</span>
               </v-tooltip>
-              <v-icon size="24">{{ item.icon }}</v-icon>
+              <v-icon size="24">mdi-account-group</v-icon>
             </v-btn>
-            
+            <v-btn icon color="secondary" @click="redirectToGitHub(MatchType.TEAM)"">
+              <v-tooltip activator="parent">
+                <span>Add Team Match</span>
+              </v-tooltip>
+              <v-icon size="24">mdi-account-group</v-icon>
+            </v-btn>
             <v-btn icon color="secondary" @click="openSimulateMatchDialog">
               <v-tooltip activator="parent">
                 <span>Match Simulation</span>
@@ -161,9 +159,12 @@ export default defineComponent({
   computed: {
     MATCH_TYPES() {
       return [
-        { type: MatchType.INDIVIDUAL, label: 'Add Individual Match', icon: 'mdi-account' },
-        { type: MatchType.TEAM, label: 'Add Team Match', icon: 'mdi-account-group' },
+        { type: MatchType.INDIVIDUAL, label: 'Individual', icon: 'mdi-account' },
+        { type: MatchType.TEAM, label: 'Team', icon: 'mdi-account-group' },
       ];
+    },
+    MatchType() {
+      return MatchType;
     },
   },
   methods: {
