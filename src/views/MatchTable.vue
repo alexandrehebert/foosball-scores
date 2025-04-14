@@ -97,48 +97,43 @@
       {{ formatDate(item.date) }}
     </template>
   </v-data-table>
-  <div class="fab-container">
-    <v-btn
-      fab
-      icon
-      color="primary"
-      size="large"
-      class="fab-button"
+
+  <v-fab
+    icon
+    app
+    color="primary"
+    size="large"
+    location="right bottom"
+    class="fab-button"
+  >
+    <v-icon>mdi-sword-cross</v-icon>
+    <v-speed-dial
+      v-model="open"
+      open-on-hover
+      open-on-click
+      activator="parent"
+      location="top center"
     >
-      <v-icon>mdi-sword-cross</v-icon>
-      <v-speed-dial
-        v-model="open"
-        location="top center"
-        activator="parent"
-        open-on-hover
-        open-on-click
-        :transition="false"
-      >
-        <template v-slot:default>
-          <div class="speed-dial-items">
-            <v-btn icon color="secondary" @click="redirectToGitHub(MatchType.INDIVIDUAL)"">
-              <v-tooltip activator="parent">
-                <span>Add Team Match</span>
-              </v-tooltip>
-              <v-icon size="24">mdi-account-group</v-icon>
-            </v-btn>
-            <v-btn icon color="secondary" @click="redirectToGitHub(MatchType.TEAM)"">
-              <v-tooltip activator="parent">
-                <span>Add Team Match</span>
-              </v-tooltip>
-              <v-icon size="24">mdi-account-group</v-icon>
-            </v-btn>
-            <v-btn icon color="secondary" @click="openSimulateMatchDialog">
-              <v-tooltip activator="parent">
-                <span>Match Simulation</span>
-              </v-tooltip>
-              <v-icon size="24">mdi-gamepad-variant</v-icon>
-            </v-btn>
-          </div>
-        </template>
-      </v-speed-dial>
-    </v-btn>
-  </div>
+      <v-btn key="individual" icon color="secondary" @click="redirectToGitHub(MatchType.INDIVIDUAL)">
+        <v-tooltip activator="parent">
+          <span>Add Individual Match</span>
+        </v-tooltip>
+        <v-icon size="24">mdi-account</v-icon>
+      </v-btn>
+      <v-btn key="team" icon color="secondary" @click="redirectToGitHub(MatchType.TEAM)">
+        <v-tooltip activator="parent">
+          <span>Add Team Match</span>
+        </v-tooltip>
+        <v-icon size="24">mdi-account-group</v-icon>
+      </v-btn>
+      <v-btn key="simulation" icon color="secondary" @click="openSimulateMatchDialog">
+        <v-tooltip activator="parent">
+          <span>Match Simulation</span>
+        </v-tooltip>
+        <v-icon size="24">mdi-gamepad-variant</v-icon>
+      </v-btn>
+    </v-speed-dial>
+  </v-fab>
 
   <MatchSimulationDialog v-model:isDialogOpen="isSimulateMatchDialogOpen" />
 </template>
@@ -147,7 +142,6 @@
 import { defineComponent, computed, ref, shallowRef } from 'vue';
 import { useFoosballStore } from '../store';
 import EloDisplay from '../components/EloDisplay.vue';
-import FloatingButton from '../components/FloatingButton.vue';
 import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
 import { formatDate } from '../utils/dates';
 import { MatchType, MatchWithEloChanges, Player } from '../types';
@@ -255,7 +249,6 @@ export default defineComponent({
   },
   components: {
     EloDisplay,
-    FloatingButton,
     MatchSimulationDialog,
   },
 });
@@ -275,18 +268,9 @@ export default defineComponent({
 .loser {
   color: red;
 }
-.fab-container {
-  position: static;
-}
-.fab-button {
+.speed-dial {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 1000;
-}
-.speed-dial-items {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
+  bottom: 16px;
+  right: 16px;
 }
 </style>

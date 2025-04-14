@@ -87,7 +87,6 @@
 import { defineComponent, computed, ref } from 'vue';
 import { useFoosballStore } from '../store';
 import EloDisplay from '../components/EloDisplay.vue';
-import FloatingButton from '../components/FloatingButton.vue';
 import SimulationPlayerCard from './SimulationPlayerCard.vue'; // Import the new component
 import { formatDate } from '../utils/dates';
 import { getDynamicKFactor } from '../services/eloService';
@@ -203,7 +202,6 @@ export default defineComponent({
   },
   components: {
     EloDisplay,
-    FloatingButton,
     SimulationPlayerCard, // Register the new component
   },
   watch: {

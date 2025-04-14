@@ -80,8 +80,6 @@
   </v-card>
 
   <TeamCard :isOpen="isTeamCardOpen" :team="selectedTeam" @update:isOpen="isTeamCardOpen = $event" />
-  <MatchSimulationDialog v-model:isDialogOpen="isSimulateMatchDialogOpen" />
-  <FloatingButton :onClick="openSimulateMatchDialog" icon="mdi-gamepad-variant" label="Simulate Match" />
 </template>
 
 <script lang="ts">
@@ -90,8 +88,6 @@ import { useFoosballStore } from '../store';
 import DotWithTooltip from '../components/DotWithTooltip.vue';
 import PlayerCard from '../components/PlayerCard.vue';
 import TeamCard from '../components/TeamCard.vue';
-import MatchSimulationDialog from '../components/MatchSimulationDialog.vue';
-import FloatingButton from '../components/FloatingButton.vue';
 import PlayerAvatarBtn from '../components/PlayerAvatarBtn.vue';
 import TeamAvatarBtn from '../components/TeamAvatarBtn.vue';
 import { LeaderboardItem } from '../types';
@@ -169,8 +165,6 @@ export default defineComponent({
   },
   components: {
     DotWithTooltip,
-    MatchSimulationDialog,
-    FloatingButton,
     PlayerCard,
     PlayerAvatarBtn,
     TeamCard,
