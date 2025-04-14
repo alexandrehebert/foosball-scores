@@ -128,7 +128,7 @@ import FloatingButton from '../components/FloatingButton.vue';
 import { formatDate } from '../utils/dates';
 import { MatchType, MatchWithEloChanges, Player } from '../types';
 import { compareAsc } from 'date-fns';
-import { GITHUB_REPOSITORY_DATA_FOLDER } from '../constants';
+import { GITHUB_REPOSITORY_DATA_EDIT } from '../constants';
 
 export default defineComponent({
   name: 'MatchTable',
@@ -157,8 +157,8 @@ export default defineComponent({
     const redirectToGitHub = (matchType: MatchType) => {
       const url =
         matchType === MatchType.TEAM
-          ? GITHUB_REPOSITORY_DATA_FOLDER + '/team-matches.csv'
-          : GITHUB_REPOSITORY_DATA_FOLDER + '/matches.csv';
+          ? GITHUB_REPOSITORY_DATA_EDIT + '/team-matches.csv'
+          : GITHUB_REPOSITORY_DATA_EDIT + '/matches.csv';
       window.open(url, '_blank');
     };
 

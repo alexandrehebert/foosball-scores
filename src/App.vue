@@ -45,7 +45,7 @@
       </v-tooltip>
       <v-tooltip>
         <template v-slot:activator="{ props }">
-          <v-btn variant="text" icon href="https://github.com/Fairstone-Financial-DEV/foosball-frontend" target="_blank"
+          <v-btn variant="text" icon :href="githubRepository" target="_blank"
             v-bind="props">
             <v-icon>mdi-github</v-icon>
           </v-btn>
@@ -81,9 +81,13 @@
 import { defineComponent, computed, onMounted, watch } from 'vue';
 import { useFoosballStore } from './store';
 import { useRouter } from 'vue-router';
+import { GITHUB_REPOSITORY } from './constants';
 
 export default defineComponent({
   name: 'App',
+  computed: {
+    githubRepository: () => GITHUB_REPOSITORY,
+  },
   setup() {
     const store = useFoosballStore();
     const router = useRouter();
