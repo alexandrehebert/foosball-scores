@@ -48,7 +48,7 @@ import { useFoosballStore } from '../store';
 import LabeledDivider from './LabeledDivider.vue';
 import ActivityHeatmap from './ActivityHeatmap.vue';
 import { compareAsc } from 'date-fns';
-import { MatchType, TeamRankingItem, type Team } from '../types';
+import { MatchType, type TeamRankingItem } from '../types';
 
 export default defineComponent({
   name: 'TeamCard',
