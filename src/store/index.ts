@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { fetchMatches } from '../services/matchService';
 import { fetchAvailableTournaments } from '../services/tournamentService';
 import { processELOData, generateLeaderboard } from '../services/eloService';
-import { EloChangeEvent, LeaderboardItem, MatchWithEloChanges, Players, Round } from '../types';
+import { EloChangeEvent, LeaderboardItem, MatchWithEloChanges, Players, Round, Season, Sport } from '../types';
 
 export const useFoosballStore = defineStore('foosball', {
   state: () => {
@@ -20,6 +20,7 @@ export const useFoosballStore = defineStore('foosball', {
         year: currentYear,
         quarter: Math.floor(currentMonth / 3) + 1, // Default to current quarter (1-4)
       },
+      selectedSport: Sport.FOOSBALL, // Default sport
       tournaments: [] as { name: string; rounds: Round[][] }[], // Store tournament data as Round[][]
       selectedTournament: null as { name: string; rounds: Round[][] } | null, // Currently selected tournament
       availableTournaments: [] as { name: string; filePath: string }[], // List of available tournaments
@@ -27,7 +28,7 @@ export const useFoosballStore = defineStore('foosball', {
   },
   actions: {
     async loadData() {
-      const { individualMatches, teamMatches } = await fetchMatches();
+      const { individualMatches, teamMatches } = await fetchMatches(this.selectedSport);
 
       const { year, quarter } = this.selectedSeason;
       const seasonStart = new Date(year, (quarter - 1) * 3, 1);
@@ -78,8 +79,11 @@ export const useFoosballStore = defineStore('foosball', {
     setSelectedTournament(tournamentName: string) {
       this.selectedTournament = this.tournaments.find((t) => t.name === tournamentName) || null;
     },
-    setSelectedSeason(season: { year: number; quarter: number }) {
+    setSelectedSeason(season: Season) {
       this.selectedSeason = season;
     },
+    setSelectedSport(sport: Sport) {
+      this.selectedSport = sport;
+    }
   },
 });

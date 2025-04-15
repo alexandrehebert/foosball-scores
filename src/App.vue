@@ -1,56 +1,70 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary">
-      <div class="d-lg-none">
-        <v-menu>
-          <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" variant="text" icon="mdi-menu">
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item
-              v-for="(link, index) in routerLinks"
-              :key="index"
-              @click="navigateTo(link.route)"
-            >
-              <v-icon class="me-2">{{ link.icon }}</v-icon>
-              <v-list-item-title>{{ link.label }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </div>
+    <v-app-bar app color="primary" class="px-2">
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" variant="text" icon="mdi-menu">
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="(link, index) in routerLinks"
+            :key="index"
+            @click="navigateTo(link.route)"
+          >
+            <template v-slot:prepend>
+              <v-icon color="primary">{{ link.icon }}</v-icon>
+            </template>
+            <v-list-item-title class="px-0">{{ link.label }}</v-list-item-title>
+          </v-list-item>
+          <v-divider />
+          <v-list-item key="badges"
+            @click="navigateTo('/badges')"
+          >
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-shield-star-outline</v-icon>
+            </template>
+            <v-list-item-title>Badges</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-toolbar-title>
-        Foosball
-        <v-icon size="large">mdi-soccer-field</v-icon>
-        Leaderboard
+        <router-link to="/" class="text-decoration-none text-white">
+          Leaderboard
+        </router-link>
       </v-toolbar-title>
+      <v-btn-toggle v-model="selectedSport"
+        color="primary"
+        mandatory
+        density="compact"
+      >
+        <v-btn icon size="small" value="foosball">
+          <v-icon>mdi-soccer</v-icon>
+        </v-btn>
+        <v-btn icon size="small" value="table-tennis">
+          <v-icon>mdi-table-tennis</v-icon>
+        </v-btn>
+      </v-btn-toggle>
       <v-select
         v-model="selectedSeason"
         :items="store.availableSeasons"
         label="Season"
         outlined
+        variant="outlined"
         density="compact"
         hide-details
         class="mx-2"
         style="max-width: 150px;"
         @change="selectedSeason = $event"
       />
-      <v-tooltip>
-        <template v-slot:activator="{ props }">
-          <v-btn variant="text" icon @click="navigateTo('/badges')" v-bind="props">
-            <v-icon>mdi-shield-star-outline</v-icon>
-          </v-btn>
-        </template>
-        <span>All Badges</span>
-      </v-tooltip>
-      <v-tooltip>
+      <v-tooltip location="bottom">
         <template v-slot:activator="{ props }">
           <v-btn variant="text" icon :href="githubRepository" target="_blank"
             v-bind="props">
             <v-icon>mdi-github</v-icon>
           </v-btn>
         </template>
-        <span>Foosball Repository</span>
+        <span>Leaderboard Repository</span>
       </v-tooltip>
     </v-app-bar>
     <v-main class="v-main">
@@ -82,6 +96,7 @@ import { defineComponent, computed, onMounted, watch } from 'vue';
 import { useFoosballStore } from './store';
 import { useRouter } from 'vue-router';
 import { GITHUB_REPOSITORY } from './constants';
+import { Sport } from './types';
 
 export default defineComponent({
   name: 'App',
@@ -116,9 +131,25 @@ export default defineComponent({
       },
     });
 
+    const selectedSport = computed({
+      get: () => store.selectedSport,
+      set: (value: Sport) => {
+        store.setSelectedSport(value);
+      },
+    });
+
     // Watch for changes in selectedSeason and reload data
     watch(
       () => store.selectedSeason,
+      async () => {
+        await store.loadData();
+      },
+      { deep: true }
+    );
+
+    // Watch for changes in selectedSeason and reload data
+    watch(
+      () => store.selectedSport,
       async () => {
         await store.loadData();
       },
@@ -129,7 +160,7 @@ export default defineComponent({
       await store.loadData();
     });
 
-    return { store, routerLinks, navigateTo, isActive, selectedSeason };
+    return { store, routerLinks, navigateTo, isActive, selectedSeason, selectedSport };
   },
 });
 </script>

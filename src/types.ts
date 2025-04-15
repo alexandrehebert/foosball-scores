@@ -52,6 +52,13 @@ export type Team = {
   members: string[]; // Array of player names
 }
 
+export type Season = { year: number; quarter: number };
+
+export enum Sport {
+  FOOSBALL = "foosball",
+  TABLE_TENNIS = "table-tennis"
+};
+
 export type Players = Record<string, Player>;
 
 export type TeamRankingItem = {

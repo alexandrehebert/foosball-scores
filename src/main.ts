@@ -66,6 +66,7 @@ const vuetify = createVuetify({
   defaults: {
     global: {
       useUtilityClasses: true, // Ensure utility classes are enabled
+      ripple: false,
     },
   },
   theme: {

@@ -6,6 +6,14 @@
           <td>
             <div class="rank-container">
               <span v-if="item.placement === 'ranked'">{{ item.rank }}</span>
+              <v-tooltip v-else>
+                <template #activator="{ props }">
+                  <v-icon class="placement-icon p-0" size="small" v-bind="props">
+                    mdi-information
+                  </v-icon>
+                </template>
+                <span>This player is in placement (fewer than 5 matches played).</span>
+              </v-tooltip>
               <v-icon v-if="item.rankVariation !== null && item.rankVariation !== 0 && item.placement === 'ranked'" :class="getRankVariationClass(item.rankVariation)"
                 :title="'Rank variation: ' + (item.rankVariation > 0 ? '+' + item.rankVariation : item.rankVariation)"
                 size="x-small">
@@ -18,14 +26,6 @@
               <PlayerAvatarBtn :player="item.player" />
               <div class="ml-2 flex-grow-1">
                 {{ item.player.name }}
-                <v-tooltip bottom>
-                  <template #activator="{ props }">
-                    <v-icon v-if="item.placement === 'unranked'" class="placement-icon" size="small" v-bind="props">
-                      mdi-information
-                    </v-icon>
-                  </template>
-                  <span>This player is in placement (fewer than 5 matches played).</span>
-                </v-tooltip>
               </div>
               <v-icon v-if="isLeader(item)" class="crown-icon" size="small">
                 mdi-trophy-award
@@ -33,13 +33,13 @@
             </div>
           </td>
           <td>{{ item.player.elo }}</td>
-          <td class="last-10-matches">
+          <td class="d-none d-md-table-cell">
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10IndividualResults)" :key="i"
                 :color="getDotColor(result)" :match="item.last10IndividualMatches[i]" />
             </div>
           </td>
-          <td class="last-10-matches">
+          <td class="d-none d-md-table-cell">
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10TeamResults)" :key="i"
                 :color="getDotColor(result)" :match="item.last10TeamMatches[i]" />
@@ -66,14 +66,14 @@
             </v-icon>
           </td>
           <td>{{ item.elo }}</td>
-          <td class="last-10-matches">
+          <td class="d-none d-md-table-cell">
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10Results)" :key="i"
                 :color="getDotColor(result)" :match="item.last10Matches[i]" />
             </div>
           </td>
-          <td>{{ item.wins }}</td>
-          <td>{{ item.losses }}</td>
+          <td class="d-none d-md-table-cell">{{ item.wins }}</td>
+          <td class="d-none d-md-table-cell">{{ item.losses }}</td>
         </tr>
       </template>
     </v-data-table>
@@ -130,10 +130,10 @@ export default defineComponent({
 
     const leaderboard = computed(() => players.value);
 
-    const isSmallScreen = ref(window.innerWidth < 768);
+    const isSmallScreen = ref(window.innerWidth < 960);
 
     const updateScreenSize = () => {
-      isSmallScreen.value = window.innerWidth < 768;
+      isSmallScreen.value = window.innerWidth < 960;
     };
 
     onMounted(() => {
@@ -146,13 +146,13 @@ export default defineComponent({
 
     const headers = computed(() => {
       return isSmallScreen.value
-        ? HEADERS.filter(header => header.key !== 'last10IndividualResults' && header.key !== 'last10TeamResults')
+        ? HEADERS.filter(header => !['last10IndividualResults', 'last10TeamResults'].includes(header.key))
         : HEADERS;
     });
 
     const teamsHeaders = computed(() => {
       return isSmallScreen.value
-        ? TEAMS_HEADERS.filter(header => header.key !== 'last10Results')
+        ? TEAMS_HEADERS.filter(header => !['last10Results', 'wins', 'losses'].includes(header.key))
         : TEAMS_HEADERS;
     });
 
@@ -277,12 +277,5 @@ export default defineComponent({
 .placement-row {
   background-color: rgba(211, 211, 211, 0.5); /* Light gray background */
   color: gray;
-}
-
-/* Hide "Last 10 Matches" columns on smaller screens */
-@media (max-width: 768px) {
-  .last-10-matches {
-    display: none;
-  }
 }
 </style>

@@ -1,7 +1,7 @@
 import { compareAsc, parseISO } from 'date-fns';
 import { parseCSV } from '../utils/csv';
 import { API_ENDPOINT, TEAMS } from '../constants';
-import { MatchType } from '../types';
+import { MatchType, Sport } from '../types';
 
 const generateUniqueId = () => Math.random().toString(36).substring(2, 9);
 
@@ -20,9 +20,10 @@ type TeamMatchRow = {
   date: string;
 };
 
-export async function fetchMatches() {
-  const matchesResponse = await fetch(`${API_ENDPOINT}/matches.csv`);
-  const teamMatchesResponse = await fetch(`${API_ENDPOINT}/team-matches.csv`);
+export async function fetchMatches(sport: Sport) {
+  const sportFolder = sport === Sport.FOOSBALL ? 'foosball' : 'table-tennis';
+  const matchesResponse = await fetch(`${API_ENDPOINT}/${sportFolder}/matches.csv`);
+  const teamMatchesResponse = await fetch(`${API_ENDPOINT}/${sportFolder}/team-matches.csv`);
 
   const matchesCSV = await matchesResponse.text();
   const teamMatchesCSV = await teamMatchesResponse.text();

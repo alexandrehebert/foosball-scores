@@ -270,7 +270,7 @@ export function generateLeaderboard(
   eloChanges: EloChangeEvent[]
 ): LeaderboardItem[] {
 
-  const { ranked, unranked } = groupBy(Object.values(players)
+  const { ranked = [], unranked = [] } = groupBy(Object.values(players)
     .map((player) => {
       const playerMatches = matchResults.filter(
         (match) =>
@@ -370,7 +370,7 @@ export function generateTeamRankings(
       losses: stats.losses,
       last10Results: stats.results.slice(-10),
       last10Matches: stats.matches.slice(-10),
-      elo: team.split(',').map((player) => players[player].elo).reduce((a, b) => a + b, 0) / team.split(',').length,
+      elo: Math.round(team.split(',').map((player) => players[player].elo).reduce((a, b) => a + b, 0) / team.split(',').length),
     }))
     .sort((a, b) => (b.wins / (b.wins + b.losses)) - (a.wins / (a.wins + a.losses)) || b.wins - a.wins || a.losses - b.losses)
     .map((item, index) => ({
