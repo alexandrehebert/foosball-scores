@@ -323,7 +323,7 @@ export default defineComponent({
   },
   setup() {
     const store = useFoosballStore();
-    const allPlayers = computed(() => Object.values(store.players));
+    const allPlayers = computed(() => Object.values(store.players).sort((a, b) => a.name.localeCompare(b.name)));
     const selectedPlayers = ref<Player[]>([]);
     const bracket = reactive<Round[][]>([]);
     const backupDrawer = ref(false);

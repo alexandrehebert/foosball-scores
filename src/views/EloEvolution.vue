@@ -57,7 +57,8 @@ export default defineComponent({
     const eloChanges = computed(() => store.eloChanges);
     const selectedPlayers = ref<string[]>([]);
 
-    const playerNames = computed(() => Object.keys(players.value));
+    const playerNames = computed(() => Object.keys(players.value)
+      .sort((a, b) => a.localeCompare(b)));
 
     const chartData = computed(() =>
       generateELOChartData(players.value, eloChanges.value)

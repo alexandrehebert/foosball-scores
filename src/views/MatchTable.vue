@@ -169,7 +169,7 @@ export default defineComponent({
   setup() {
     const store = useFoosballStore();
     const allMatches = computed(() => store.matchResults.sort((a, b) => compareAsc(b.date, a.date)));
-    const players = computed(() => Object.values(store.players));
+    const players = computed(() => Object.values(store.players).sort((a, b) => a.name.localeCompare(b.name)));
 
     const selectedMatchType = ref<string | null>(null);
     const selectedBlue = ref<Player | null>(null);
