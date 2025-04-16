@@ -51,7 +51,7 @@
             @click="openPlayerCard(player)"
             class="pb-4 position-relative"
           >
-            <v-sheet class="elo-sparkline d-flex items-center position-absolute top-0 bottom-0 left-0 right-0" color="transparent">
+            <v-sheet class="elo-sparkline d-flex items-center position-absolute top-0 left-0 right-0" color="transparent">
               <v-sparkline
                 :auto-line-width="true"
                 :fill="false"
@@ -59,7 +59,7 @@
                 gradient-direction="top"
                 line-width="3"
                 :model-value="[0, ...getEloChanges(player)]"
-                padding="2"
+                padding="5"
                 smooth="10"
                 stroke-linecap="round"
                 type="trend"
@@ -95,6 +95,7 @@
                 <v-icon>mdi-account</v-icon>
               </v-avatar>
             </template>
+            <v-spacer class="my-6" />
             <ActivityHeatmap :playerName="player.name" :allMatches="allMatches" :maxActivityOverride="maxActivity" />
           </v-card>
         </v-col>

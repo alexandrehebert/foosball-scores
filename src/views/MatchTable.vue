@@ -167,6 +167,7 @@ export default defineComponent({
   },
   setup() {
     const store = useFoosballStore();
+    const sport = computed(() => store.selectedSport);
     const allMatches = computed(() => store.matchResults.sort((a, b) => compareAsc(b.date, a.date)));
     const players = computed(() => Object.values(store.players).sort((a, b) => a.name.localeCompare(b.name)));
 
@@ -177,8 +178,8 @@ export default defineComponent({
     const redirectToGitHub = (matchType: MatchType) => {
       const url =
         matchType === MatchType.TEAM
-          ? GITHUB_REPOSITORY_DATA_EDIT + '/team-matches.csv'
-          : GITHUB_REPOSITORY_DATA_EDIT + '/matches.csv';
+          ? GITHUB_REPOSITORY_DATA_EDIT + '/' + sport.value + '/team-matches.csv'
+          : GITHUB_REPOSITORY_DATA_EDIT + '/' + sport.value  + '/matches.csv';
       window.open(url, '_blank');
     };
 

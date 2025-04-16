@@ -12,6 +12,15 @@
     >
       mdi-checkbox-blank
     </v-icon>
+    <v-icon
+      v-for="i in 10 - Object.keys(activityMap).length"
+      :key="'placeholder-' + i"
+      class="heatmap-icon"
+      :style="{ color: '#f0f0f0' }"
+      title="No activity"
+    >
+      mdi-checkbox-blank-outline
+    </v-icon>
   </div>
 </template>
 
