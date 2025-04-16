@@ -30,7 +30,7 @@
       </v-menu>
       <v-toolbar-title>
         <router-link to="/" class="text-decoration-none text-white">
-          Leaderboard
+          FairPlay
         </router-link>
       </v-toolbar-title>
       <v-btn-toggle v-model="selectedSport"
@@ -45,6 +45,7 @@
           <v-icon>mdi-table-tennis</v-icon>
         </v-btn>
       </v-btn-toggle>
+      <v-divider vertical class="ml-4 mr-2" />
       <v-select
         v-model="selectedSeason"
         :items="store.availableSeasons"
