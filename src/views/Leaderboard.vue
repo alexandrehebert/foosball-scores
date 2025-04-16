@@ -33,7 +33,7 @@
             </div>
           </td>
           <td>{{ item.player.elo }}</td>
-          <td class="d-none d-md-table-cell">
+          <td>
             <div class="dots-container">
               <DotWithTooltip v-for="(result, i) in paddedResults(item.last10IndividualResults)" :key="i"
                 :color="getDotColor(result)" :match="item.last10IndividualMatches[i]" />
@@ -58,7 +58,7 @@
           <td>{{ item.rank }}</td>
           <td class="player-container">
             <TeamAvatarBtn :team="item" />
-            <div class="ml-2 flex-grow-1">
+            <div class="ml-2 flex-grow-1" style="white-space: nowrap;">
               {{ item.members.join(' & ') }}
             </div>
             <v-icon v-if="item.rank === 1" class="crown-icon" size="small">
@@ -72,8 +72,8 @@
                 :color="getDotColor(result)" :match="item.last10Matches[i]" />
             </div>
           </td>
-          <td class="d-none d-md-table-cell">{{ item.wins }}</td>
-          <td class="d-none d-md-table-cell">{{ item.losses }}</td>
+          <td>{{ item.wins }}</td>
+          <td>{{ item.losses }}</td>
         </tr>
       </template>
     </v-data-table>
@@ -146,13 +146,13 @@ export default defineComponent({
 
     const headers = computed(() => {
       return isSmallScreen.value
-        ? HEADERS.filter(header => !['last10IndividualResults', 'last10TeamResults'].includes(header.key))
+        ? HEADERS.filter(header => !['last10TeamResults'].includes(header.key))
         : HEADERS;
     });
 
     const teamsHeaders = computed(() => {
       return isSmallScreen.value
-        ? TEAMS_HEADERS.filter(header => !['last10Results', 'wins', 'losses'].includes(header.key))
+        ? TEAMS_HEADERS.filter(header => !['last10Results'].includes(header.key))
         : TEAMS_HEADERS;
     });
 
@@ -235,7 +235,7 @@ export default defineComponent({
 <style scoped>
 .dots-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: left;
   gap: 4px;
 }
