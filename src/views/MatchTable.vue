@@ -104,7 +104,6 @@
     color="primary"
     size="large"
     location="right bottom"
-    class="fab-button"
   >
     <v-icon>mdi-sword-cross</v-icon>
     <v-speed-dial
@@ -267,10 +266,5 @@ export default defineComponent({
 }
 .loser {
   color: red;
-}
-.speed-dial {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
 }
 </style>
