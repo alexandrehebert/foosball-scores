@@ -275,6 +275,7 @@ export default defineComponent({
 }
 
 .placement-row {
-  background-color: rgba(211, 211, 211, 0.5); /* Light gray background */
+  opacity: .8;
+  background-color: rgba(211, 211, 211, 0.3); /* Light gray background */
 }
 </style>
