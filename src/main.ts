@@ -71,7 +71,7 @@ const vuetify = createVuetify({
   },
   theme: {
     defaultTheme: window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'customLightTheme'
+      ? 'customDarkTheme'
       : 'customLightTheme',
     themes: {
       customLightTheme,
