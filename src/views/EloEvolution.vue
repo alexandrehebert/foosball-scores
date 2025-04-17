@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card v-if="processedData.datasets.length > 0">
     <v-select
       v-model="selectedPlayers"
       :items="playerNames"
@@ -26,6 +26,13 @@
         <span>{{ player }}</span>
       </div>
     </div>
+  </v-card>
+  <v-card v-else class="d-flex align-center justify-center">
+    <v-card-title>No data available</v-card-title>
+    <v-card-subtitle>
+      Track your progress over time!<br />
+      Let's play some <router-link to="/matches">matches</router-link> and see how your ELO changes!
+    </v-card-subtitle>
   </v-card>
 </template>
 

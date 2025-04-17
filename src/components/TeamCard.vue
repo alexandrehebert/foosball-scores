@@ -10,7 +10,8 @@
           <div class="d-flex flex-column align-end" style="gap: 0.2rem;">
             <v-progress-circular
               :model-value="winRate"
-              :color="winRateColor"
+              color="green"
+              bg-color="red"
               size="36"
               width="6"
             >
@@ -104,11 +105,6 @@ export default defineComponent({
         match.winner.some(player => this.team.members.includes(player))
       ).length;
       return teamMatches.length > 0 ? (wins / teamMatches.length) * 100 : 0;
-    },
-    winRateColor() {
-      if (this.winRate >= 75) return 'green';
-      if (this.winRate >= 50) return 'orange';
-      return 'red';
     },
   },
   methods: {
