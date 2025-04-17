@@ -21,13 +21,13 @@ const routes: RouteRecordRaw[] = [
       return `/${sport}/${year}Q${quarter}/leaderboard`;
     }
   },
-  { path: '/:sport/:season', redirect: to => `/${to.params.sport}/${to.params.season}/leaderboard` },
-  { path: '/:sport/:season/leaderboard', component: Leaderboard },
-  { path: '/:sport/:season/tournament', component: Tournament },
-  { path: '/:sport/:season/matches', component: MatchTable },
-  { path: '/:sport/:season/elo-evolution', component: EloEvolution },
-  { path: '/:sport/:season/activity', component: ActivitySummary },
-  { path: '/:sport/:season/badges', name: 'Badges', component: BadgesPage },
+  { path: '/:sport/', redirect: to => `/${to.params.sport}/${to.params.season}/leaderboard` },
+  { path: '/:sport/leaderboard', component: Leaderboard },
+  { path: '/:sport/tournament', component: Tournament },
+  { path: '/:sport/matches', component: MatchTable },
+  { path: '/:sport/elo-evolution', component: EloEvolution },
+  { path: '/:sport/activity', component: ActivitySummary },
+  { path: '/:sport/badges', name: 'Badges', component: BadgesPage },
 ];
 
 const router = createRouter({

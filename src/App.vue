@@ -10,19 +10,19 @@
           <v-list-item
             v-for="(link, index) in routerLinks"
             :key="index"
-            :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}${link.route}`"
+            :to="`/${store.selectedSport}${link.route}`"
           >
             <template v-slot:prepend>
-              <v-icon color="primary">{{ link.icon }}</v-icon>
+              <v-icon>{{ link.icon }}</v-icon>
             </template>
             <v-list-item-title class="px-0">{{ link.label }}</v-list-item-title>
           </v-list-item>
           <v-divider />
           <v-list-item key="badges"
-            :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}/badges`"
+            :to="`/${store.selectedSport}/badges`"
           >
             <template v-slot:prepend>
-              <v-icon color="primary">mdi-shield-star-outline</v-icon>
+              <v-icon>mdi-shield-star-outline</v-icon>
             </template>
             <v-list-item-title>Badges</v-list-item-title>
           </v-list-item>
@@ -72,11 +72,11 @@
       <v-container>
         <v-row justify="center" class="d-none d-lg-flex pb-2" style="justify-self: center;">
           <v-col v-for="(link, index) in routerLinks" :key="index" class="align-center">
-            <router-link :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}${link.route}`" custom>
+            <router-link :to="`/${store.selectedSport}${link.route}`" custom>
               <template v-slot="{ navigate }">
                 <v-btn
                   :variant="isActive(link.route) ? 'tonal' : 'text'"
-                  :color="isActive(link.route) ? 'primary' : ''"
+                  :color="isActive(link.route) ? 'tonal' : ''"
                   @click="navigate"
                   :prepend-icon="link.icon"
                 >

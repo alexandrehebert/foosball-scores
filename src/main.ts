@@ -38,15 +38,15 @@ const customLightTheme = {
 const customDarkTheme = {
   dark: true,
   colors: {
-    primary: '#ede5f5',
-    'primary-dark': '#52356e',
-    'primary-light': '#3f2a56',
-    secondary: '#009bcd',
-    'secondary-dark': '#007ea8',
-    'secondary-light': '#006789',
-    tertiary: '#ff6754',
-    'tertiary-dark': '#e14632',
-    'tertiary-light': '#d93620',
+    primary: '#333',
+    'primary-dark': '#222',
+    'primary-light': '#444',
+    secondary: '#555',
+    'secondary-dark': '#444',
+    'secondary-light': '#666',
+    tertiary: '#777',
+    'tertiary-dark': '#666',
+    'tertiary-light': '#888',
     'neutral-black-100': '#fff',
     'neutral-black-80': '#fafafa',
     'neutral-black-75': '#f1f1f1',
@@ -56,9 +56,9 @@ const customDarkTheme = {
     'neutral-black-5': '#333',
     'neutral-black-3': '#404040',
     'neutral-black-0': '#000',
-    'medal-gold': '#FFD700',
-    'medal-silver': '#C0C0C0',
-    'medal-bronze': '#CD7F32',
+    'medal-gold': '#999',
+    'medal-silver': '#aaa',
+    'medal-bronze': '#bbb',
   },
 };
 
@@ -71,8 +71,8 @@ const vuetify = createVuetify({
   },
   theme: {
     defaultTheme: window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'customLightTheme' // DARK theme disabled for now 'customDarkTheme'
-    : 'customLightTheme',
+      ? 'customDarkTheme'
+      : 'customLightTheme',
     themes: {
       customLightTheme,
       customDarkTheme,
@@ -86,7 +86,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
 });
 
 createApp(App)
-  .use(pinia) // Use Pinia globally
   .use(router) // Use the router
+  .use(pinia) // Use Pinia globally
   .use(vuetify) // Use Vuetify globally
   .mount('#app');

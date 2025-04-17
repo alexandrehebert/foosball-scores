@@ -7,14 +7,14 @@ export function useNavigation() {
 
   const navigateTo = (route: string) => {
     const sport = store.selectedSport;
-    const season = `${store.selectedSeason.year}Q${store.selectedSeason.quarter}`;
-    router.push(`/${sport}/${season}${route}`);
+    // const season = `${store.selectedSeason.year}Q${store.selectedSeason.quarter}`;
+    router.push(`/${sport}${route}`);
   };
 
   const isActive = (route: string) => {
     const sport = store.selectedSport;
-    const season = `${store.selectedSeason.year}Q${store.selectedSeason.quarter}`;
-    return router.currentRoute.value.path === `/${sport}/${season}${route}`;
+    // const season = `${store.selectedSeason.year}Q${store.selectedSeason.quarter}`;
+    return router.currentRoute.value.path === `/${sport}${route}`;
   };
 
   return {
