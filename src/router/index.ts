@@ -13,15 +13,15 @@ const routes: RouteRecordRaw[] = [
     path: '/', 
     redirect: () => {
       const store = useFoosballStore();
-      const currentYear = new Date().getFullYear();
-      const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
-      const sport = 'foosball';
-      const latestSeason = store.availableSeasons?.[0] ?? currentYear + '#Q' + currentQuarter;
-      const [year, quarter] = latestSeason.split('#Q');
-      return `/${sport}/${year}Q${quarter}/leaderboard`;
+      // const currentYear = new Date().getFullYear();
+      // const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
+      const sport = store.selectedSport ?? 'foosball';
+      // const latestSeason = store.availableSeasons?.[0] ?? currentYear + '#Q' + currentQuarter;
+      // const [year, quarter] = latestSeason.split('#Q');
+      return `/${sport}/leaderboard`;
     }
   },
-  { path: '/:sport/', redirect: to => `/${to.params.sport}/${to.params.season}/leaderboard` },
+  { path: '/:sport/', redirect: to => `/${to.params.sport}/leaderboard` },
   { path: '/:sport/leaderboard', component: Leaderboard },
   { path: '/:sport/tournament', component: Tournament },
   { path: '/:sport/matches', component: MatchTable },
