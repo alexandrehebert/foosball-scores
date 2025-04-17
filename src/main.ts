@@ -86,7 +86,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
 });
 
 createApp(App)
-  .use(router) // Use the router
   .use(pinia) // Use Pinia globally
+  .use(router) // Use the router
   .use(vuetify) // Use Vuetify globally
   .mount('#app');

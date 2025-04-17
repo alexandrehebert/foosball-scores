@@ -10,7 +10,7 @@
           <v-list-item
             v-for="(link, index) in routerLinks"
             :key="index"
-            @click="navigateTo(link.route)"
+            :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}${link.route}`"
           >
             <template v-slot:prepend>
               <v-icon color="primary">{{ link.icon }}</v-icon>
@@ -19,7 +19,7 @@
           </v-list-item>
           <v-divider />
           <v-list-item key="badges"
-            @click="navigateTo('/badges')"
+            :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}/badges`"
           >
             <template v-slot:prepend>
               <v-icon color="primary">mdi-shield-star-outline</v-icon>
@@ -72,7 +72,7 @@
       <v-container>
         <v-row justify="center" class="d-none d-lg-flex pb-2" style="justify-self: center;">
           <v-col v-for="(link, index) in routerLinks" :key="index" class="align-center">
-            <router-link :to="link.route" custom>
+            <router-link :to="`/${store.selectedSport}/${store.selectedSeason.year}Q${store.selectedSeason.quarter}${link.route}`" custom>
               <template v-slot="{ navigate }">
                 <v-btn
                   :variant="isActive(link.route) ? 'tonal' : 'text'"
@@ -98,15 +98,14 @@ import { useFoosballStore } from './store';
 import { useRouter } from 'vue-router';
 import { GITHUB_REPOSITORY } from './constants';
 import { Sport } from './types';
+import { useNavigation } from './composables/useNavigation';
 
 export default defineComponent({
   name: 'App',
-  computed: {
-    githubRepository: () => GITHUB_REPOSITORY,
-  },
   setup() {
     const store = useFoosballStore();
     const router = useRouter();
+    const { navigateTo, isActive } = useNavigation();
 
     const routerLinks = [
       { label: 'Leaderboard', icon: 'mdi-podium-gold', route: '/leaderboard' },
@@ -116,19 +115,13 @@ export default defineComponent({
       { label: 'Activity', icon: 'mdi-calendar', route: '/activity' },
     ];
 
-    const navigateTo = (route: string) => {
-      router.push(route);
-    };
-
-    const isActive = (route: string) => {
-      return router.currentRoute.value.path === route;
-    };
-
     const selectedSeason = computed({
       get: () => `${store.selectedSeason.year}#Q${store.selectedSeason.quarter}`,
       set: (value: string) => {
         const [year, quarter] = value.split('#Q').map(Number);
         store.setSelectedSeason({ year, quarter });
+        const currentPath = router.currentRoute.value.path.split('/').slice(3).join('/');
+        navigateTo('/' + currentPath);
       },
     });
 
@@ -136,6 +129,8 @@ export default defineComponent({
       get: () => store.selectedSport,
       set: (value: Sport) => {
         store.setSelectedSport(value);
+        const currentPath = router.currentRoute.value.path.split('/').slice(3).join('/');
+        navigateTo('/' + currentPath);
       },
     });
 
@@ -161,7 +156,15 @@ export default defineComponent({
       await store.loadData();
     });
 
-    return { store, routerLinks, navigateTo, isActive, selectedSeason, selectedSport };
+    return { 
+      store, 
+      routerLinks, 
+      navigateTo, 
+      isActive, 
+      selectedSeason, 
+      selectedSport,
+      githubRepository: GITHUB_REPOSITORY 
+    };
   },
 });
 </script>

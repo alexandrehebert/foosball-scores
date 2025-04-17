@@ -31,14 +31,15 @@
     <v-card-title>No data available</v-card-title>
     <v-card-subtitle>
       Track your progress over time!<br />
-      Let's play some <router-link to="/matches">matches</router-link> and see how your ELO changes!
+      Let's play some matches and see how your ELO changes!
     </v-card-subtitle>
   </v-card>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref } from 'vue';
+import { defineComponent, computed, ref, onMounted, watch } from 'vue';
 import { Line } from 'vue-chartjs';
+import { useRoute, useRouter } from 'vue-router';
 import { useFoosballStore } from '../store';
 import {
   Chart as ChartJS,
@@ -60,9 +61,31 @@ export default defineComponent({
   components: { Line },
   setup() {
     const store = useFoosballStore();
+    const route = useRoute();
+    const router = useRouter();
     const players = computed(() => store.players);
     const eloChanges = computed(() => store.eloChanges);
     const selectedPlayers = ref<string[]>([]);
+
+    // Initialize selected players from URL
+    onMounted(() => {
+      const urlPlayers = route.query.players;
+      if (urlPlayers) {
+        selectedPlayers.value = Array.isArray(urlPlayers)
+          ? urlPlayers as string[]
+          : [urlPlayers];
+      }
+    });
+
+    // Update URL when selection changes
+    watch(() => [...selectedPlayers.value], (newVal) => {
+      router.replace({
+        query: { 
+          ...route.query,
+          players: newVal.length > 0 ? newVal : undefined 
+        }
+      });
+    });
 
     const playerNames = computed(() => Object.keys(players.value)
       .sort((a, b) => a.localeCompare(b)));
