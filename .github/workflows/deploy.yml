@@ -13,8 +13,8 @@ permissions:
 
 env:
   VITE_IS_GH_PAGES: 'true'
-  VITE_BASE_URL: /foosball-scores/
-  VITE_API_ENDPOINT: /foosball-scores/
+  VITE_BASE_URL: /leaderboard/
+  VITE_API_ENDPOINT: /leaderboard/
 
 concurrency:
   group: 'pages'
